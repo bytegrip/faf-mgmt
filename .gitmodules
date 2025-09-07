@@ -1,0 +1,6 @@
+[submodule "lostfound-service"]
+	path = lostfound-service
+	url = https://github.com/bytegrip/lostfound-service
+[submodule "budgeting-service"]
+	path = budgeting-service
+	url = https://github.com/bytegrip/budgeting-service
