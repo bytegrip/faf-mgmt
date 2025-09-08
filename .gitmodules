@@ -10,3 +10,9 @@
 [submodule "booking-service"]
 	path = booking-service
 	url = https://github.com/FriptuLudmila/booking-service
+[submodule "notification-service"]
+	path = notification-service
+	url = https://Masha003@github.com/Masha003/notification-service.git
+[submodule "user-management-service"]
+	path = user-management-service
+	url = git@github.com:Masha003/user-management-service.git
