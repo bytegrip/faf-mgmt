@@ -4,3 +4,9 @@
 [submodule "budgeting-service"]
 	path = budgeting-service
 	url = https://github.com/bytegrip/budgeting-service
+[submodule "checkin-service"]
+	path = checkin-service
+	url = https://github.com/FriptuLudmila/checkin-service
+[submodule "booking-service"]
+	path = booking-service
+	url = https://github.com/FriptuLudmila/booking-service
