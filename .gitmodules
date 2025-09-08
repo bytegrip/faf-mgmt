@@ -19,3 +19,6 @@
 [submodule "tea-management-service"]
 	path = tea-management-service
 	url = https://github.com/katymun/tea-management-service
+[submodule "communication-service"]
+	path = communication-service
+	url = https://github.com/katymun/communication-service
