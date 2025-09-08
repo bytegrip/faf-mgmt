@@ -16,3 +16,6 @@
 [submodule "user-management-service"]
 	path = user-management-service
 	url = git@github.com:Masha003/user-management-service.git
+[submodule "tea-management-service"]
+	path = tea-management-service
+	url = https://github.com/katymun/tea-management-service
