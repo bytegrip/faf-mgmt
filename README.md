@@ -6,7 +6,9 @@
     - [8. Budgeting Service](#8-budgeting-service)
 - [Technologies and Communication](#technologies-and-communication)
 - [Communication Contract](#communication-contract)
-
+  -  [Data Management Across Services](#data-management-across-services)
+  -  [Endpoints Definition](#endpoints-definition)
+  - [Services Endpoints](#services-eps)
 ## Service Boundaries
 
 ### 7. Lost & Found Service
@@ -38,7 +40,6 @@
 
 We’ve chosen **REST over HTTP** as the communication pattern for all the services, because it’s quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we’ll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
 But of course there are trade-offs. REST is not optimal for real-time features, as in our case is the Communication Service, since it lacks streaming or push support. It also increases coupling because services must call each other directly to complete workflows. Even so, given that most of our operations are transactional, we’re ok )
-
 
 [//]: # (### 7. Lost & Found Service)
 
@@ -81,4 +82,30 @@ But of course there are trade-offs. REST is not optimal for real-time features, 
 
 ## Communication Contract
 
+### Data Management Across Services
+
+We’ve decided that each microservice will be responsible for its own data and will maintain a separate database schema. No service has direct access to another service’s database, instead, data is shared strictly through REST APIs exposed by each service. In this case, each domain entity will be owned exclusively by its responsible service, and when another service will need that data - it will issue a REST request to the owning service.
+
+### Endpoints Definition
+All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. They follow consistent “conventions” to keep it easy to integrate with each other.
+
+**Some general conventions:**
+
+* Each service is mounted under `/api/{service}`, where `{service}` is a shortened identifier (e.g., `/api/frs` = Fund Raising Service).
+
+* Requests use `Authorization: Bearer <JWT> issued by the User Management Service. Role checks are enforced per EP.
+
+* All requests and responses use `application/json` content type.
+
+* All datetime fields use `ISO 8601` format in **UTC**.
+
+* Common established error JSON shape: 
+````json 
+{ 
+  "error": "VALIDATION_ERROR", 
+  "message": "field X is required"
+}
+````
+
+### Services EPs
 ###
