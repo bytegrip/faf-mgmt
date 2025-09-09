@@ -22,3 +22,9 @@
 [submodule "communication-service"]
 	path = communication-service
 	url = https://github.com/katymun/communication-service
+[submodule "fund-raising-service"]
+	path = fund-raising-service
+	url = https://github.com/felycianovac/fund-raising-service
+[submodule "sharing-service"]
+	path = sharing-service
+	url = https://github.com/felycianovac/sharing-service
