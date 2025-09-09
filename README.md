@@ -2,11 +2,10 @@
 
 ## Table of Contents
 - [Service Boundaries](#service-boundaries)
-  - [7. Lost & Found Service](#7-lost--found-service)
-  - [8. Budgeting Service](#8-budgeting-service)
+    - [7. Lost & Found Service](#7-lost--found-service)
+    - [8. Budgeting Service](#8-budgeting-service)
 - [Technologies and Communication](#technologies-and-communication)
-  - [7. Lost & Found Service](#7-lost--found-service-1)
-  - [8. Budgeting Service](#8-budgeting-service-1)
+- [Communication Contract](#communication-contract)
 
 ## Service Boundaries
 
@@ -28,26 +27,58 @@
 
 ## Technologies and Communication
 
-### 7. Lost & Found Service
+|  | Services                       | Student Assigned    | Language/Framework   | DB  | Motivation | Trade-offs         |
+|--|--------------------------------|---------------------|----------------------|-----|------------|--------------------|
+| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |     |            |        |
+| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |     |            |  |
+| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) |     |            |     |
+| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |     |            |    |
+| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    |     |            |       |
+<p align="right"><i>Table 1 – Services & Technologies</i></p>
 
-**Technology Stack:**
-- Language: C#
-- Framework: ASP.NET Core Web API
-- Database: PostgreSQL
-- Communication: REST with JSON
+We’ve chosen **REST over HTTP** as the communication pattern for all the services, because it’s quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we’ll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
+But of course there are trade-offs. REST is not optimal for real-time features, as in our case is the Communication Service, since it lacks streaming or push support. It also increases coupling because services must call each other directly to complete workflows. Even so, given that most of our operations are transactional, we’re ok )
 
-**Motivation:** C# provides good text handling for post content and comments. PostgreSQL offers full-text search for finding items and handles the post-comment relationships well. REST fits the simple CRUD operations needed.
 
-**Trade-offs:** More setup overhead than lighter alternatives, but provides reliable data handling and built-in validation for user-generated content.
+[//]: # (### 7. Lost & Found Service)
 
-### 8. Budgeting Service
+[//]: # ()
+[//]: # (**Technology Stack:**)
 
-**Technology Stack:**
-- Language: C#
-- Framework: ASP.NET Core Web API
-- Database: PostgreSQL
-- Communication: REST with JSON
+[//]: # (- Language: C#)
 
-**Motivation:** C# decimal type prevents money calculation errors. PostgreSQL ACID compliance ensures financial data integrity. REST provides clear endpoints for different transaction types.
+[//]: # (- Framework: ASP.NET Core Web API)
 
-**Trade-offs:** Heavier stack than needed for simple operations, but financial accuracy requirements justify the choice. May need multiple API calls for complex reports.
+[//]: # (- Database: PostgreSQL)
+
+[//]: # (- Communication: REST with JSON)
+
+[//]: # ()
+[//]: # (**Motivation:** C# provides good text handling for post content and comments. PostgreSQL offers full-text search for finding items and handles the post-comment relationships well. REST fits the simple CRUD operations needed.)
+
+[//]: # ()
+[//]: # (**Trade-offs:** More setup overhead than lighter alternatives, but provides reliable data handling and built-in validation for user-generated content.)
+
+[//]: # ()
+[//]: # (### 8. Budgeting Service)
+
+[//]: # ()
+[//]: # (**Technology Stack:**)
+
+[//]: # (- Language: C#)
+
+[//]: # (- Framework: ASP.NET Core Web API)
+
+[//]: # (- Database: PostgreSQL)
+
+[//]: # (- Communication: REST with JSON)
+
+[//]: # ()
+[//]: # (**Motivation:** C# decimal type prevents money calculation errors. PostgreSQL ACID compliance ensures financial data integrity. REST provides clear endpoints for different transaction types.)
+
+[//]: # ()
+[//]: # (**Trade-offs:** Heavier stack than needed for simple operations, but financial accuracy requirements justify the choice. May need multiple API calls for complex reports.)
+
+## Communication Contract
+
+###
