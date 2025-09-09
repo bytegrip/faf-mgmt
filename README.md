@@ -2,6 +2,9 @@
 
 ## Table of Contents
 - [Service Boundaries](#service-boundaries)
+    - [Services Overview](#services-overview)
+        - [Services 1 & 2](#services-1--2)
+    - [Architecture Diagram](#architecture-diagram)
 - [Technologies and Communication](#technologies-and-communication)
 - [Communication Contract](#communication-contract)
   -  [Data Management Across Services](#data-management-across-services)
@@ -9,7 +12,8 @@
   - [Services Endpoints](#services-eps)
 ## Service Boundaries
 
-### Services 1 & 2
+### Services Overview
+#### Services 1 & 2
 | **Service**               | **Example Service 1**                                                                       | **Example Service**                                                                        |
 |---------------------------|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
 | **Responsibility**        | Example responsibility                                                                      | Example responsibility                                                                     |
@@ -44,6 +48,9 @@
 [//]: # (| **Service Boundaries** | • Treasury balance tracking<br>• Transaction logging<br>• Debt book for damages<br>• CSV report generation<br>• Receives data from other services |)
 
 [//]: # (| **Main Features** | • Track current FAF Cab and FAF NGO balance<br>• Log donations and spending with timestamps<br>• Separate FAF donations from Partner donations<br>• Maintain debt records for broken/overused items<br>• Generate CSV reports for admins<br>• Show transparent spending logs<br>• Receive transaction data from Fund Raising service |)
+
+### Architecture Diagram
+
 
 ## Technologies and Communication
 
