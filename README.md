@@ -27,7 +27,7 @@
 | **Budgeting** | • Tracks all financial transactions (donations, spending).<br>• Maintains the FAF NGO treasury balance and a public log.<br>• Manages a debt book for property damage or overuse.<br>• Allows admins to generate financial reports in CSV format. |
 | **Fund Raising** | • Allows admins to create and manage fundraising campaigns for specific items.<br>• Tracks user donations towards a goal within a set timeframe.<br>• Orchestrates the registration of newly acquired items into other relevant services (e.g., Sharing, Budgeting). |
 | **Sharing** | • Manages the inventory of multi-use, non-consumable items (games, cables, kettles).<br>• Handles the "renting" and "returning" lifecycle of shared objects.<br>• Tracks the state/condition of each item and its ownership (personal or FAF). |
-| **External Dependencies** | - **UMS:** validate identities via JWT<br>- ex item <br>- ex item<br>- ex item<br>- ex item | - **UMS:** validate identities via JWT<br>- ex item <br>- ex item<br>- ex item<br>- ex item |
+| 
 <p align="right"><i>Table 1 – Example Services Boundaries</i></p>
 
 
@@ -285,42 +285,6 @@ Registers a one-time guest.
 
 -----
 
-### Asynchronous Communication (Events via RabbitMQ)
-
-#### Event: `user.entered`
-
-  * **Payload:**
-    ```json
-    {
-      "userId": "string",
-      "timestamp": "datetime"
-    }
-    ```
-  * **Purpose:** Published when the service identifies a known user entering the cab.
-
-#### Event: `user.exited`
-
-  * **Payload:**
-    ```json
-    {
-      "userId": "string",
-      "timestamp": "datetime"
-    }
-    ```
-  * **Purpose:** Published when a user leaves the cab.
-
-#### Event: `security.unknown_person`
-
-  * **Payload:**
-    ```json
-    {
-      "timestamp": "datetime",
-      "imageUrl": "string"
-    }
-    ```
-  * **Purpose:** Allows the Notification Service to alert admins of a potential security issue.
-
------
 
 #### 9. Fund Raising Service (FRS)
 **Base URL:** `/api/frs`
@@ -677,4 +641,37 @@ Registers a one-time guest.
   "updatedAt": "ISO Date"
 }
 ````
+## GitHub Workflow
+### Branch Naming Convention
+
+Format: type/scope/short-description  
+
+| Type     | Description | Example |
+|----------|-------------|---------|
+| feature | New functionality | feature/user-service/discord-login |
+| bugfix  | Issue resolution | bugfix/booking-service/calendar-sync |
+| chore   | Maintenance/config | chore/cpr/add-submodules |
+| docs    | Documentation only | docs/cpr/readme-structure |
+
+### Branch Rules
+
+| Branch | Merge Strategy | Description |
+|--------|----------------|-------------|
+| `main` | **Rebase and merge** | Clean, linear history for production releases |
+| `dev`  | **Squash and merge** | Condensed commits for feature integration |
+
+**Branch Protection:**
+- Direct pushes to `main` and `dev` are prohibited
+- All changes must go through Pull Requests
+- `main` and `dev` branches cannot be deleted
+- Conversation issues must be resolved before merging
+- Stale pull requests are dismissed
+
+### Contribution Rules
+| Requirement          | Policy |
+|----------------------|--------|
+| Code Review          | Minimum 2 contributor approvals before merging into dev or main |
+| Commit Security      | All commits must pass GitGuardian checks (no secrets, no .env files) |
+| Test Coverage        | Each microservice must maintain ≥ 80% |
+
 
