@@ -11,6 +11,7 @@
   -  [Endpoints Definition](#endpoints-definition)
   - [Services Endpoints](#services-eps)
     - [9. Fund Raising Service](#9-fund-raising-service-frs)
+    - [10. Sharing Service](#10-sharing-service-shs)
 ## Service Boundaries
 
 ### Services Overview
@@ -467,3 +468,213 @@ Registers a one-time guest.
   ]
 }
 ````
+-------
+
+#### 10. Sharing Service (SHS)
+
+**Base URL:** `/api/shs`
+
+**Entities:**
+* `Object` — shareable multi-use asset with ownership and condition.
+* `Rental` — record of an object being borrowed, including renter and status.
+
+
+**Endpoints List:**
+
+| Method | Path                         | Auth        | Purpose                    |
+|--------|------------------------------|-------------|----------------------------|
+| POST   | /objects                     | user/admin  | Create object              |
+| GET    | /objects                     | public      | List all the objects       |
+| GET    | /objects/{id}                | public      | Get obj by id              |
+| POST   | /objects/{id}/rentals        | user        | request rental             |
+| POST   | /rentals/{rentalId}/checkout | owner/admin | approve rental             |
+| PATCH  | rentals/{rentalId}/return    | user        | return rental              |
+| POST   | /objects/{id}/damage         | user        | report damage              |
+| PATCH  | /objects/{id}                | user        | update the state of an obj |
+
+**Endpoints Specs:**
+
+`POST /objects`
+
+**Request:**
+````json
+{
+  "name": "string",
+  "type": "string", 
+  "ownerType": "string (enum: PERSONAL, FAF)",              
+  "ownerUserId": "string (or null if FAF)",
+  "condition": "string (enum: NEW, GOOD, FAIR, POOR)",           
+  "notes": "string"
+}
+
+````
+
+**Response 201:**
+
+````json
+{
+	"id": "string",
+	"name": "string",
+	"type": "string", 
+  "ownerType": "string (enum: PERSONAL, FAF)",
+    "ownerUserId": "string (or null if FAF)",
+	"condition": "string (enum: NEW, GOOD, FAIR, POOR)",
+    "notes": "string",
+	"createdBy": "string (userId)",
+	"createdAt": "ISO Date",
+	"updatedAt": "ISO Date"
+}
+
+````
+
+
+`GET /objects`
+
+**Response 200:**
+````json
+{
+	"items": [
+		{
+			"id": "string",
+			"name": "string",
+			"type": "string",
+			"ownerType": "string (enum: PERSONAL, FAF)",
+			"ownerUserId": "string (or null if FAF)",
+			"condition": "string (enum: NEW, GOOD, FAIR, POOR)",
+			"activeRental": "string (rentalId or null)"
+		}
+	]
+}
+
+````
+
+`GET /objects/{id}`
+**Response 200:**
+````json
+{
+    "id": "string",
+    "name": "string",
+    "type": "string",
+    "ownerType": "string (enum: PERSONAL, FAF)",
+    "ownerUserId": "string (or null if FAF)",
+    "condition": "string (enum: NEW, GOOD, FAIR, POOR)",
+    "notes": "string",
+    "activeRental": "string (rentalId or null)",
+    "createdBy": "string (userId)",
+    "createdAt": "ISO Date",
+    "updatedAt": "ISO Date"
+}
+````
+
+`POST /objects/{id}/rentals`
+
+**Request:**
+````json
+{
+  "dueAt": "ISO Date"
+}
+````
+
+**Response 201:**
+````json
+{
+  "rentalId": "string",
+  "objectId": "string",
+  "renterId": "string (userId)",
+  "status": "string (enum: PENDING, CHECKED_OUT, RETURNED, OVERDUE)",
+  "dueAt": "ISO Date",
+  "createdAt": "ISO Date"
+}
+````
+
+`POST /rentals/{rentalId}/checkout`
+**Request:**
+````json
+{
+	"status": "CHECKED_OUT"
+}
+````
+
+**Response 201:**
+````json
+{
+  "rentalId": "string",
+  "objectId": "string",
+  "renterId": "string (userId)",
+  "status": "string (enum: PENDING, CHECKED_OUT, RETURNED, OVERDUE)",
+  "dueAt": "ISO Date",
+  "createdAt": "ISO Date",
+  "checkedOutAt": "ISO Date"
+}
+````
+
+`PATCH /rentals/{rentalId}/return`
+
+**Request:**
+````json
+{
+  "condition": "string (enum: NEW, GOOD, FAIR, POOR)"          
+}
+````
+
+**Response 200:**
+````json
+{
+  "rentalId": "string",
+  "objectId": "string",
+  "renterId": "string (userId)",
+  "status": "string (enum: PENDING, CHECKED_OUT, RETURNED, OVERDUE)",
+  "dueAt": "ISO Date",
+  "createdAt": "ISO Date",
+  "checkedOutAt": "ISO Date",
+  "returnedAt": "ISO Date"
+}
+````
+
+`POST /objects/{id}/damage`
+
+**Request:**
+````json
+{
+  "description": "string",
+  "severity": "string (enum: MINOR, MAJOR, CRITICAL)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "reportId": "string",
+  "objectId": "string",
+  "reportedBy": "string (userId)",
+  "description": "string",
+  "severity": "string (enum: MINOR, MAJOR, CRITICAL)",
+  "reportedAt": "ISO Date"
+}
+````
+
+`PATCH /objects/{id}`
+
+**Request:**
+````json
+{
+  "condition": "string (enum: NEW, GOOD, FAIR, POOR)",
+  "notes": "string"
+}
+````    
+**Response 200:**
+````json
+{
+  "id": "string",
+  "name": "string",
+  "type": "string",
+  "ownerType": "string (enum: PERSONAL, FAF)",
+  "ownerUserId": "string (or null if FAF)",
+  "condition": "string (enum: NEW, GOOD, FAIR, POOR)",
+  "notes": "string",
+  "createdBy": "string (userId)",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO Date"
+}
+````
+
