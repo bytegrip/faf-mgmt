@@ -13,11 +13,18 @@
 ## Service Boundaries
 
 ### Services Overview
-#### Services 1 & 2
-| **Service**               | **Example Service 1**                                                                       | **Example Service**                                                                        |
-|---------------------------|---------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
-| **Responsibility**        | Example responsibility                                                                      | Example responsibility                                                                     |
-| **Service Boundaries**    | - ex item <br>- ex item <br>- ex item                                                       | - ex item <br>- ex item <br>- ex item                                                      |
+| Service Name | Core Responsibilities (Boundaries) |
+| :--- | :--- |
+| **User Management** | • Manages user profiles (name, nickname, role, group).<br>• Central source of truth for user identity.<br>• Integrates with Discord to fetch and sync community member data. |
+| **Notification** | • Handles all outgoing communications (e.g., email, Discord DMs).<br>• Sends alerts based on events from other services (e.g., low supplies, new bookings).<br>• Ensures timely and targeted delivery of messages. |
+| **Tea Management** | • Tracks inventory levels of all consumables (tea, sugar, cups, markers).<br>• Logs which user consumes which items and when.<br>• Triggers notifications for low stock or excessive resource usage. |
+| **Communication** | • Facilitates real-time chat between users (public and private channels).<br>• Allows users to find each other by nickname.<br>• Enforces communication rules through word censorship and user bans. |
+| **Cab Booking** | • Manages the schedule for bookable spaces (main room, kitchen).<br>• Prevents scheduling conflicts.<br>• Integrates with Google Calendar to sync events. |
+| **Check-in** | • Tracks user presence inside FAF Cab by processing entry and exit events.<br>• Manages a log of one-time guest registrations.<br>• Identifies and alerts admins about unrecognized individuals. |
+| **Lost & Found** | • Manages user-generated posts about lost or found items.<br>• Supports comment threads for discussion on each post.<br>• Allows the original poster to mark an issue as resolved. |
+| **Budgeting** | • Tracks all financial transactions (donations, spending).<br>• Maintains the FAF NGO treasury balance and a public log.<br>• Manages a debt book for property damage or overuse.<br>• Allows admins to generate financial reports in CSV format. |
+| **Fund Raising** | • Allows admins to create and manage fundraising campaigns for specific items.<br>• Tracks user donations towards a goal within a set timeframe.<br>• Orchestrates the registration of newly acquired items into other relevant services (e.g., Sharing, Budgeting). |
+| **Sharing** | • Manages the inventory of multi-use, non-consumable items (games, cables, kettles).<br>• Handles the "renting" and "returning" lifecycle of shared objects.<br>• Tracks the state/condition of each item and its ownership (personal or FAF). |
 | **External Dependencies** | - **UMS:** validate identities via JWT<br>- ex item <br>- ex item<br>- ex item<br>- ex item | - **UMS:** validate identities via JWT<br>- ex item <br>- ex item<br>- ex item<br>- ex item |
 <p align="right"><i>Table 1 – Example Services Boundaries</i></p>
 
@@ -51,16 +58,20 @@
 
 ### Architecture Diagram
 
+![FAF Cab Logo](./assets/fafcab.png)
+
 
 ## Technologies and Communication
 
-|  | Services                       | Student Assigned    | Language/Framework   | DB  | Motivation | Trade-offs         |
-|--|--------------------------------|---------------------|----------------------|-----|------------|--------------------|
-| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |     |            |        |
-| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |     |            |  |
-| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) |     |            |     |
-| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |     |            |    |
-| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    |     |            |       |
+## Technologies and Communication
+
+|   | Services                       | Student Assigned    | Language/Framework   | DB                  | Motivation | Trade-offs         |
+|---|--------------------------------|---------------------|----------------------|-----------------------|------------|--------------------|
+| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                     |            |        |
+| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                     |            |  |
+| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB   | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
+| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |                     |            |    |
+| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    |                     |            |       |
 <p align="right"><i>Table X – Services & Technologies</i></p>
 
 We’ve chosen **REST over HTTP** as the communication pattern for all the services, because it’s quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we’ll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
@@ -133,4 +144,176 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 ````
 
 ### Services EPs
-###
+
+## Booking Service
+
+### Synchronous Communication (REST API)
+
+#### `POST /bookings`
+
+Creates a new booking for a room.
+
+  * **Request Body:**
+
+    ```json
+    {
+      "userId": "string",
+      "room": "string",
+      "startTime": "datetime",
+      "endTime": "datetime"
+    }
+    ```
+
+  * **Response (201 Created):**
+
+    ```json
+    {
+      "bookingId": "string",
+      "userId": "string",
+      "room": "string",
+      "startTime": "datetime",
+      "endTime": "datetime",
+      "createdAt": "datetime"
+    }
+    ```
+
+  * **Error Responses:** `400 Bad Request`, `409 Conflict (time slot taken)`
+
+#### `GET /bookings?start={date}&end={date}`
+
+Gets all bookings within a specified date range.
+
+  * **Response (200 OK):**
+    ```json
+    [
+      {
+        "bookingId": "string",
+        "userId": "string",
+        "room": "string",
+        "startTime": "datetime",
+        "endTime": "datetime"
+      }
+    ]
+    ```
+
+#### `DELETE /bookings/{bookingId}`
+
+Cancels a specific booking.
+
+  * **Response (204 No Content)**
+  * **Error Responses:** `403 Forbidden`, `404 Not Found`
+
+-----
+
+### Asynchronous Communication (Events via RabbitMQ)
+
+#### Event: `booking.created`
+
+  * **Payload:** The full booking object, same as the `201 Created` response.
+  * **Purpose:** Allows the Notification Service to listen for new bookings and send confirmations.
+
+#### Event: `booking.cancelled`
+
+  * **Payload:**
+    ```json
+    {
+      "bookingId": "string",
+      "userId": "string"
+    }
+    ```
+  * **Purpose:** Notifies other services that a booking has been removed.
+
+-----
+
+## 🚪 Check-in Service
+
+### Synchronous Communication (REST API)
+
+#### `GET /status/current`
+
+Gets a list of all users currently inside FAFCab.
+
+  * **Response (200 OK):**
+    ```json
+    [
+      {
+        "userId": "string",
+        "nickname": "string",
+        "checkInTime": "datetime"
+      }
+    ]
+    ```
+
+#### `GET /history/{userId}?start={date}&end={date}`
+
+Gets the entry and exit history for a specific user within a date range.
+
+  * **Response (200 OK):**
+    ```json
+    [
+      {
+        "type": "string",
+        "timestamp": "datetime"
+      }
+    ]
+    ```
+  * **Error Responses:** `404 Not Found`
+
+#### `POST /guest`
+
+Registers a one-time guest.
+
+  * **Request Body:**
+    ```json
+    {
+      "hostUserId": "string",
+      "guestName": "string"
+    }
+    ```
+  * **Response (201 Created):**
+    ```json
+    {
+      "guestLogId": "string",
+      "guestName": "string",
+      "hostUserId": "string",
+      "entryTime": "datetime"
+    }
+    ```
+  * **Error Responses:** `400 Bad Request`
+
+-----
+
+### Asynchronous Communication (Events via RabbitMQ)
+
+#### Event: `user.entered`
+
+  * **Payload:**
+    ```json
+    {
+      "userId": "string",
+      "timestamp": "datetime"
+    }
+    ```
+  * **Purpose:** Published when the service identifies a known user entering the cab.
+
+#### Event: `user.exited`
+
+  * **Payload:**
+    ```json
+    {
+      "userId": "string",
+      "timestamp": "datetime"
+    }
+    ```
+  * **Purpose:** Published when a user leaves the cab.
+
+#### Event: `security.unknown_person`
+
+  * **Payload:**
+    ```json
+    {
+      "timestamp": "datetime",
+      "imageUrl": "string"
+    }
+    ```
+  * **Purpose:** Allows the Notification Service to alert admins of a potential security issue.
