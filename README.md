@@ -10,6 +10,7 @@
   -  [Data Management Across Services](#data-management-across-services)
   -  [Endpoints Definition](#endpoints-definition)
   - [Services Endpoints](#services-eps)
+    - [9. Fund Raising Service](#9-fund-raising-service-frs)
 ## Service Boundaries
 
 ### Services Overview
@@ -225,7 +226,7 @@ Cancels a specific booking.
 
 -----
 
-## 🚪 Check-in Service
+## Check-in Service
 
 ### Synchronous Communication (REST API)
 
@@ -317,3 +318,152 @@ Registers a one-time guest.
     }
     ```
   * **Purpose:** Allows the Notification Service to alert admins of a potential security issue.
+
+-----
+
+#### 9. Fund Raising Service (FRS)
+**Base URL:** `/api/frs`
+
+**Entities:**
+* `Initiative` — represents a fundraising effort for an object or consumable, with goal, deadline, and status
+* `Donation` - a contribution made by a user to an initiative
+
+**Endpoints List:**
+
+| Method | Path                          | Auth       | Purpose                    |
+|--------|-------------------------------|------------|----------------------------|
+| POST   | /initiatives                  | admin      | Create fund                |
+| GET    | /initiatives                  | public     | List all the funds         |
+| GET    | /initiatives/{id}             | public     | Get fund by id             |
+| POST   | /initiatives/{id}/donations   | user       | donate                     |
+| GET    | /frs/initiative/{id}/donations| admin      | list donations for a fund  |
+| POST   | /initiatives/{id}/finalize    | system use | finalize fund              |
+
+**Endpoints Specs:**
+
+`POST /initiatives`
+
+**Request:**
+````json
+{
+  "title": "Electric Kettle",
+  "description": "1.7L stainless steel kettle for kitchen",
+  "qty":1,
+  "goal": 120.00,
+  "currency": "MDL",
+  "deadline": "ISO date",
+  "targetType": "ASSET",          
+  "targetSubtype": "kettle"
+}
+````
+**Response 201:**
+````json
+{
+  "id": 0,
+  "status": "OPEN",
+  "title": "Electric Kettle",
+  "description": "1.7L stainless steel kettle for kitchen",
+  "qty": 1,
+  "goal": 120.00,
+  "raised": 0.00,
+  "currency": "MDL",
+  "deadline": "ISO date",
+  "targetType": "ASSET",
+  "targetSubtype": "kettle",
+  "createdBy": 0,
+  "createdAt": "ISO date",
+  "updatedAt": "ISO date"
+}
+````
+
+`GET /initiatives`
+
+**Response 200:**
+
+````json
+{
+  "initiatives": [
+    {
+      "id": 0,
+      "status": "OPEN",
+      "title": "Electric Kettle",
+      "description": "1.7L stainless steel kettle for kitchen",
+      "qty": 1,
+      "goal": 120.00,
+      "raised": 90.00,
+      "currency": "MDL",
+      "deadline": "ISO Date",
+      "targetType": "ASSET",
+      "targetSubtype": "kettle",
+      "createdAt": "ISO Date",
+      "updatedAt": "ISO date"
+    }
+  ]
+}
+````
+
+`GET /initiatives/{id}`
+
+**Response 200:**
+
+````json
+{
+  "id": 0,
+  "status": "OPEN",
+  "title": "Electric Kettle",
+  "description": "1.7L stainless steel kettle for kitchen",
+  "qty": 1,
+  "goal": 120.00,
+  "raised": 90.00,
+  "currency": "MDL",
+  "deadline": "ISO Date",
+  "targetType": "ASSET",
+  "targetSubtype": "kettle",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO date"
+}
+````
+
+`POST /initiatives/{id}/donations`
+
+**Request:**
+````json
+{
+  "amount": 20.00
+}
+````
+**Response 201:**
+````json
+{
+"id": 0,
+"status": "OPEN",
+"title": "Electric Kettle",
+"description": "1.7L stainless steel kettle for kitchen",
+"qty": 1,
+"goal": 120.00,
+"raised": 90.00,
+"currency": "MDL",
+"deadline": "ISO Date",
+"targetType": "ASSET",
+"targetSubtype": "kettle",
+"createdAt": "ISO Date",
+"updatedAt": "ISO date"
+}
+````
+
+`GET /initiative/{id}/donations`
+
+**Response 200:**
+````json
+{
+  "donations": [
+    {
+      "id": 0,
+      "userId": 0,
+      "amount": 20.00,
+      "currency": "MDL",
+      "createdAt": "ISO Date"
+      }
+  ]
+}
+````
