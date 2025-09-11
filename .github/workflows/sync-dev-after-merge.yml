@@ -1,0 +1,48 @@
+name: Sync Dev Branch After Main Merge
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  sync-dev:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        fetch-depth: 0
+
+    - name: Configure Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Sync dev branch to main
+      run: |
+        git fetch origin
+        
+        git checkout dev
+        
+        git reset --hard origin/main
+        
+        git push --force-with-lease origin dev
+
+    - name: Verify sync completed
+      run: |
+        git checkout main
+        MAIN_HASH=$(git rev-parse HEAD)
+        git checkout dev
+        DEV_HASH=$(git rev-parse HEAD)
+        
+        if [ "$MAIN_HASH" = "$DEV_HASH" ]; then
+          echo "✅ Dev branch successfully synced with main"
+          echo "Both branches at commit: $MAIN_HASH"
+        else
+          echo "❌ Sync failed - branches have different commits"
+          echo "Main: $MAIN_HASH"
+          echo "Dev: $DEV_HASH"
+          exit 1
+        fi
