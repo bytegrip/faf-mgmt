@@ -58,12 +58,9 @@
 
 [//]: # (| **Main Features** | • Track current FAF Cab and FAF NGO balance<br>• Log donations and spending with timestamps<br>• Separate FAF donations from Partner donations<br>• Maintain debt records for broken/overused items<br>• Generate CSV reports for admins<br>• Show transparent spending logs<br>• Receive transaction data from Fund Raising service |)
 
-### Architecture Diagram
+## Architecture Diagram
 
 ![FAF Cab Logo](./assets/fafcab.png)
-
-
-## Technologies and Communication
 
 ## Technologies and Communication
 
@@ -145,9 +142,187 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ````
 
-### Services EPs
+## Services EPs
 
-## Booking Service
+### 3. Tea Management Service
+#### Base URL: /api/tms
+#### Entities:
+- **Consumable** - represents an item like tea, sugar, cups, paper, etc.
+- **ConsumptionLog** - record of when a user consumes a consumable.
+- **ThresholdAlert** - triggered when consumables run low or a user exceeds fair use.
+
+#### EP List:
+| Method | Path                   | Auth   | Purpose                                    |
+| ------ | ---------------------- | ------ | ------------------------------------------ |
+| POST   | /consumables           | admin  | Add a new consumable item                  |
+| GET    | /consumables           | public | List all consumables with stock levels     |
+| GET    | /consumables/{id}      | public | Get details of a consumable                |
+| PUT  | /consumables/{id}      | admin  | Update stock levels or details             |
+| POST   | /consumptions          | user   | Log a consumption event                    |
+| GET    | /consumptions          | admin  | View all consumption logs                  |
+| GET    | /consumptions/{userId} | admin  | View consumption logs by user              |
+| GET    | /alerts                | admin  | List triggered alerts (low stock, overuse) |
+
+#### POST /consumables
+- *Request:*
+```json
+{
+  "name": "Tea Bags",
+  "unit": "bags",
+  "stock": 200,
+  "lowStockThreshold": 20
+}
+```
+- *Response 201:*
+```json
+{
+  "id": "uuid",
+  "name": "Tea Bags",
+  "unit": "bags",
+  "stock": 200,
+  "lowStockThreshold": 20,
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+#### GET /consumables
+- *Response 200:*
+```json
+{
+  "consumables": [
+    {
+      "id": 0,
+      "name": "Tea Bags",
+      "unit": "bags",
+      "stock": 150,
+      "lowStockThreshold": 20,
+      "updatedAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized 
+#### GET /consumables/{id}
+*Response 200:*
+```json
+{
+  "id": "3f9c07f2-8d3d-45a6-90b2-7c37e7c62a2f",
+  "name": "Tea Bags",
+  "unit": "bags",
+  "stock": 150,
+  "lowStockThreshold": 20,
+  "createdAt": "2025-09-01T10:00:00Z",
+  "updatedAt": "2025-09-11T14:00:00Z"
+}
+```
+- *Errors:* 400 Bad Request, 404 Not Found
+#### PUT /consumables/{id}
+- *Request:*
+```json
+{
+  "stock": 180
+}
+```
+- *Response 200:*
+```json
+{
+  "id": 0,
+  "name": "Tea Bags",
+  "unit": "bags",
+  "stock": 180,
+  "lowStockThreshold": 20,
+  "updatedAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### POST /consumptions
+- *Request:*
+```json
+{
+  "userId": 42,
+  "consumableId": 0,
+  "amount": 3
+}
+
+```
+- *Response 201:*
+```json
+{
+  "id": 0,
+  "userId": 42,
+  "consumableId": 0,
+  "amount": 3,
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### GET /consumptions
+- *Response 200:*
+```json
+{
+  "logs": [
+    {
+      "id": "6b77216c-39e8-4ef9-b2f1-4a7c24d3428e",
+      "userId": "5f8b6c3e-0e29-4d7b-a6f1-68eae87c73f3",
+      "consumableId": "3f9c07f2-8d3d-45a6-90b2-7c37e7c62a2f",
+      "amount": 2,
+      "createdAt": "2025-09-11T12:00:00Z"
+    },
+    {
+      "id": "ab12d3e4-f6c7-48b9-8d1a-2c3d4e5f6789",
+      "userId": "2c9a6bff-1a3e-4c9b-9d5c-123456789abc",
+      "consumableId": "3f9c07f2-8d3d-45a6-90b2-7c37e7c62a2f",
+      "amount": 1,
+      "createdAt": "2025-09-11T11:45:00Z"
+    }
+  ]
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden
+#### GET /consumptions/{userId}
+- *Response 200:*
+```json
+{
+  "logs": [
+    {
+      "id": 0,
+      "userId": 42,
+      "consumableId": 0,
+      "amount": 3,
+      "createdAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### GET /alerts
+- *Response 200:*
+```json
+{
+  "alerts": [
+    {
+      "id": 0,
+      "type": "LOW_STOCK",
+      "consumableId": 0,
+      "currentStock": 10,
+      "threshold": 20,
+      "createdAt": "ISO Date"
+    },
+    {
+      "id": 1,
+      "type": "OVERUSE",
+      "userId": 42,
+      "consumableId": 0,
+      "amountUsed": 50,
+      "limit": 20,
+      "createdAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized, 403 Forbidden
+### 5. Booking Service
 
 ### Synchronous Communication (REST API)
 
@@ -227,7 +402,7 @@ Cancels a specific booking.
 
 -----
 
-## Check-in Service
+### 6. Check-in Service
 
 ### Synchronous Communication (REST API)
 
@@ -286,7 +461,7 @@ Registers a one-time guest.
 -----
 
 
-#### 9. Fund Raising Service (FRS)
+### 9. Fund Raising Service (FRS)
 **Base URL:** `/api/frs`
 
 **Entities:**
@@ -434,7 +609,7 @@ Registers a one-time guest.
 ````
 -------
 
-#### 10. Sharing Service (SHS)
+### 10. Sharing Service (SHS)
 
 **Base URL:** `/api/shs`
 
