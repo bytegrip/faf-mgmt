@@ -1201,3 +1201,66 @@ Format: `type/scope/short-description`
 | Test Coverage        | Each microservice must maintain ≥ 80% |
 | Pull Requests        | PRs must have a meaningful title and a short description of the changes if needed.|
 | Versioning           | We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.<br> - `MAJOR`: breaking changes across services<br> - `MINOR`: new backward-compatible functionality<br> - `PATCH`: backward-compatible bug fixes |
+
+### PR Structure Guide
+
+#### PR Title Format
+
+```
+Type: Brief description
+```
+
+**Examples:**
+- `Feature: Add post resolution functionality`
+- `Bugfix: Fix decimal precision in transaction calculations`
+- `Chore: Update authentication middleware`
+
+#### PR Description Template
+
+```markdown
+## Summary
+Brief description of what this PR accomplishes and why it's needed.
+
+## Changes Made
+- [ ] List specific changes
+- [ ] Use checkboxes for major modifications
+- [ ] Include both backend and frontend changes if applicable
+
+## Service Impact
+**Primary Service:** [Service Name]
+**Secondary Services:** [List any services that might be affected]
+
+## Testing
+- [ ] Unit tests added/updated
+- [ ] Integration tests pass
+- [ ] Manual testing completed
+- [ ] API testing done
+
+## Screenshots/Evidence (if applicable)
+<!-- Add screenshots for UI changes, API response examples, or logs -->
+
+## Related Issues
+- Closes #[issue-number]
+- Related to #[issue-number]
+
+## Breaking Changes
+<!-- List any breaking changes or mark as "None" -->
+
+## Additional Notes
+<!-- Any additional context, deployment notes, or follow-up tasks -->
+```
+
+#### General Guidelines
+
+- Reference the specific microservice in brackets
+- Include test coverage information
+- Mention database schema changes when applicable
+- Note any environment variable additions
+- Keep descriptions concise but informative
+- Use checkboxes to track completion status
+
+#### PR Size Guidelines
+
+- **Small (< 200 lines):** Quick review, single feature/fix
+- **Medium (200-500 lines):** Standard review, may need discussion
+- **Large (> 500 lines):** Break down if possible, requires thorough review
