@@ -346,31 +346,31 @@ Registers a one-time guest.
 **Request:**
 ````json
 {
-  "title": "Electric Kettle",
-  "description": "1.7L stainless steel kettle for kitchen",
+  "title": "string",
+  "description": "string",
   "qty":1,
   "goal": 120.00,
-  "currency": "MDL",
+  "currency": "string (enum: MDL, EUR, USD)",
   "deadline": "ISO date",
-  "targetType": "ASSET",          
-  "targetSubtype": "kettle"
+  "targetType": "string (enum: ASSET, CONSUMABLE)",         
+  "targetSubtype": "string"
 }
 ````
 **Response 201:**
 ````json
 {
-  "id": 0,
-  "status": "OPEN",
-  "title": "Electric Kettle",
-  "description": "1.7L stainless steel kettle for kitchen",
+  "id": "string",
+  "status": "string (enum: OPEN, CLOSED, CANCELED, FINALIZED)",
+  "title": "string",
+  "description": "string",
   "qty": 1,
   "goal": 120.00,
   "raised": 0.00,
-  "currency": "MDL",
+  "currency": "string (enum: MDL, EUR, USD)",
   "deadline": "ISO date",
-  "targetType": "ASSET",
-  "targetSubtype": "kettle",
-  "createdBy": 0,
+  "targetType": "string (enum: ASSET, CONSUMABLE)",
+  "targetSubtype": "string",
+  "createdBy": "string (userId)",
   "createdAt": "ISO date",
   "updatedAt": "ISO date"
 }
@@ -384,17 +384,17 @@ Registers a one-time guest.
 {
   "initiatives": [
     {
-      "id": 0,
-      "status": "OPEN",
-      "title": "Electric Kettle",
-      "description": "1.7L stainless steel kettle for kitchen",
+      "id": "string",
+      "status": "string (enum: OPEN, CLOSED, CANCELED, FINALIZED)",
+      "title": "string",
+      "description": "string",
       "qty": 1,
       "goal": 120.00,
       "raised": 90.00,
-      "currency": "MDL",
+      "currency": "string (enum: MDL, EUR, USD)",
       "deadline": "ISO Date",
-      "targetType": "ASSET",
-      "targetSubtype": "kettle",
+      "targetType": "string (enum: ASSET, CONSUMABLE)",
+      "targetSubtype": "string",
       "createdAt": "ISO Date",
       "updatedAt": "ISO date"
     }
@@ -409,16 +409,16 @@ Registers a one-time guest.
 ````json
 {
   "id": 0,
-  "status": "OPEN",
-  "title": "Electric Kettle",
-  "description": "1.7L stainless steel kettle for kitchen",
+  "status": "string (enum: OPEN, CLOSED, CANCELED, FINALIZED)",
+  "title": "string",
+  "description": "string",
   "qty": 1,
   "goal": 120.00,
   "raised": 90.00,
-  "currency": "MDL",
+  "currency": "string (enum: MDL, EUR, USD)",
   "deadline": "ISO Date",
-  "targetType": "ASSET",
-  "targetSubtype": "kettle",
+  "targetType": "string (enum: ASSET, CONSUMABLE)",
+  "targetSubtype": "string",
   "createdAt": "ISO Date",
   "updatedAt": "ISO date"
 }
@@ -435,19 +435,19 @@ Registers a one-time guest.
 **Response 201:**
 ````json
 {
-"id": 0,
-"status": "OPEN",
-"title": "Electric Kettle",
-"description": "1.7L stainless steel kettle for kitchen",
-"qty": 1,
-"goal": 120.00,
-"raised": 90.00,
-"currency": "MDL",
-"deadline": "ISO Date",
-"targetType": "ASSET",
-"targetSubtype": "kettle",
-"createdAt": "ISO Date",
-"updatedAt": "ISO date"
+  "id": "string",
+  "status": "string (enum: OPEN, CLOSED, CANCELED, FINALIZED)",
+  "title": "string",
+  "description": "string",
+  "qty": 1,
+  "goal": 120.00,
+  "raised": 90.00,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "deadline": "ISO Date",
+  "targetType": "string (enum: ASSET, CONSUMABLE)",
+  "targetSubtype": "string",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO date"
 }
 ````
 
@@ -458,10 +458,10 @@ Registers a one-time guest.
 {
   "donations": [
     {
-      "id": 0,
-      "userId": 0,
+      "id": "string",
+      "userId": "string",
       "amount": 20.00,
-      "currency": "MDL",
+      "currency": "string (enum: MDL, EUR, USD)",
       "createdAt": "ISO Date"
       }
   ]
