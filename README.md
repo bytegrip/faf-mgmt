@@ -9,12 +9,15 @@
   -  [Data Management Across Services](#data-management-across-services)
   -  [Endpoints Definition](#endpoints-definition)
   - [Services Endpoints](#services-eps)
+    - [7. Lost & Found Service](#7-lost--found-service-lfs)
+    - [8. Budgeting Service](#8-budgeting-service-bs)
     - [9. Fund Raising Service](#9-fund-raising-service-frs)
     - [10. Sharing Service](#10-sharing-service-shs)
 - [GitHub Workflow](#github-workflow)
   - [Branch Naming Convention](#branch-naming-convention)
   - [Branch Rules](#branch-rules)
   - [Contribution Rules](#contribution-rules)
+
 ## Service Boundaries
 
 ### Services Overview
@@ -33,34 +36,6 @@
 | 
 <p align="right"><i>Table 1 – Services Boundaries</i></p>
 
-
-[//]: # (### 7. Lost & Found Service)
-
-[//]: # ()
-[//]: # (| **Aspect** | **Description** |)
-
-[//]: # (|------------|-----------------|)
-
-[//]: # (| **Core Responsibility** | Lost item management and community board |)
-
-[//]: # (| **Service Boundaries** | • Post creation for lost/found items<br>• Comment threads under posts<br>• Post resolution tracking<br>• Minimal external dependencies |)
-
-[//]: # (| **Main Features** | • Create posts about lost or found items<br>• Add comments to existing posts<br>• Search posts by item type, date, or status<br>• Mark posts as resolved when item is returned<br>• Basic content filtering<br>• Send notification requests when posts are updated |)
-
-[//]: # ()
-[//]: # (### 8. Budgeting Service)
-
-[//]: # ()
-[//]: # (| **Aspect** | **Description** |)
-
-[//]: # (|------------|-----------------|)
-
-[//]: # (| **Core Responsibility** | Financial tracking and transparency |)
-
-[//]: # (| **Service Boundaries** | • Treasury balance tracking<br>• Transaction logging<br>• Debt book for damages<br>• CSV report generation<br>• Receives data from other services |)
-
-[//]: # (| **Main Features** | • Track current FAF Cab and FAF NGO balance<br>• Log donations and spending with timestamps<br>• Separate FAF donations from Partner donations<br>• Maintain debt records for broken/overused items<br>• Generate CSV reports for admins<br>• Show transparent spending logs<br>• Receive transaction data from Fund Raising service |)
-
 ## Architecture Diagram
 
 ![FAF Cab Logo](./assets/fafcab.png)
@@ -68,65 +43,26 @@
 
 ## Technologies and Communication
 
-|   | Services                       | Student Assigned    | Language/Framework   | DB                             | Motivation | Trade-offs         |
+|   | Services                       | Student Assigned    | Language/Framework   | DB                             | Motivation | Trade-offs         |
 |---|--------------------------------|---------------------|----------------------|--------------------------------|------------|--------------------|
-| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                                |            |        |
-| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                                |            |  |
-| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
-| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |                                |            |    |
-| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    | PostgreSQL                     | ASP.NET Core with PostgreSQL offers reliability, security, and strong transactional guarantees, well suited for handling financial and resource-sharing workflows.           | Adds overhead in schema management and is heavier compared to lighter frameworks, which can slow iteration and increase resource usage.      |
+| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                                |            |        |
+| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                                |            |  |
+| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
+| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    | PostgreSQL                     | C# provides excellent decimal handling for financial calculations and strong type safety for money operations. ASP.NET Core offers robust validation and security features essential for financial data. PostgreSQL ensures ACID compliance for transaction integrity and supports full-text search for Lost & Found posts. | Heavier resource usage compared to lighter frameworks. More complex setup and deployment process. Less flexibility for rapid prototyping compared to dynamic languages. |
+| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    | PostgreSQL                     | ASP.NET Core with PostgreSQL offers reliability, security, and strong transactional guarantees, well suited for handling financial and resource-sharing workflows.           | Adds overhead in schema management and is heavier compared to lighter frameworks, which can slow iteration and increase resource usage.      |
 <p align="right"><i>Table 2 – Services & Technologies</i></p>
 
-We’ve chosen **REST over HTTP** as the communication pattern for all the services, because it’s quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we’ll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
-But of course there are trade-offs. REST is not optimal for real-time features, as in our case is the Communication Service, since it lacks streaming or push support. It also increases coupling because services must call each other directly to complete workflows. Even so, given that most of our operations are transactional, we’re ok )
-
-[//]: # (### 7. Lost & Found Service)
-
-[//]: # ()
-[//]: # (**Technology Stack:**)
-
-[//]: # (- Language: C#)
-
-[//]: # (- Framework: ASP.NET Core Web API)
-
-[//]: # (- Database: PostgreSQL)
-
-[//]: # (- Communication: REST with JSON)
-
-[//]: # ()
-[//]: # (**Motivation:** C# provides good text handling for post content and comments. PostgreSQL offers full-text search for finding items and handles the post-comment relationships well. REST fits the simple CRUD operations needed.)
-
-[//]: # ()
-[//]: # (**Trade-offs:** More setup overhead than lighter alternatives, but provides reliable data handling and built-in validation for user-generated content.)
-
-[//]: # ()
-[//]: # (### 8. Budgeting Service)
-
-[//]: # ()
-[//]: # (**Technology Stack:**)
-
-[//]: # (- Language: C#)
-
-[//]: # (- Framework: ASP.NET Core Web API)
-
-[//]: # (- Database: PostgreSQL)
-
-[//]: # (- Communication: REST with JSON)
-
-[//]: # ()
-[//]: # (**Motivation:** C# decimal type prevents money calculation errors. PostgreSQL ACID compliance ensures financial data integrity. REST provides clear endpoints for different transaction types.)
-
-[//]: # ()
-[//]: # (**Trade-offs:** Heavier stack than needed for simple operations, but financial accuracy requirements justify the choice. May need multiple API calls for complex reports.)
+We've chosen **REST over HTTP** as the communication pattern for all the services, because it's quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we'll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
+But of course there are trade-offs. REST is not optimal for real-time features, as in our case is the Communication Service, since it lacks streaming or push support. It also increases coupling because services must call each other directly to complete workflows. Even so, given that most of our operations are transactional, we're ok )
 
 ## Communication Contract
 
 ### Data Management Across Services
 
-We’ve decided that each microservice will be responsible for its own data and will maintain a separate database schema. No service has direct access to another service’s database, instead, data is shared strictly through REST APIs exposed by each service. In this case, each domain entity will be owned exclusively by its responsible service, and when another service will need that data - it will issue a REST request to the owning service.
+We've decided that each microservice will be responsible for its own data and will maintain a separate database schema. No service has direct access to another service's database, instead, data is shared strictly through REST APIs exposed by each service. In this case, each domain entity will be owned exclusively by its responsible service, and when another service will need that data - it will issue a REST request to the owning service.
 
 ### Endpoints Definition
-All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. They follow consistent “conventions” to keep it easy to integrate with each other.
+All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. They follow consistent "conventions" to keep it easy to integrate with each other.
 
 **Some general conventions:**
 
@@ -190,6 +126,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
 #### GET /consumables
 - *Response 200:*
 ```json
@@ -207,6 +144,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 401 Unauthorized 
+
 #### GET /consumables/{id}
 *Response 200:*
 ```json
@@ -221,6 +159,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 404 Not Found
+
 #### PUT /consumables/{id}
 - *Request:*
 ```json
@@ -240,6 +179,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+
 #### POST /consumptions
 - *Request:*
 ```json
@@ -261,6 +201,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+
 #### GET /consumptions
 - *Response 200:*
 ```json
@@ -284,6 +225,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden
+
 #### GET /consumptions/{userId}
 - *Response 200:*
 ```json
@@ -300,6 +242,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+
 #### GET /alerts
 - *Response 200:*
 ```json
@@ -326,6 +269,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 }
 ```
 - *Errors:* 401 Unauthorized, 403 Forbidden
+
 ### 5. Booking Service
 
 ### Synchronous Communication (REST API)
@@ -464,6 +408,406 @@ Registers a one-time guest.
 
 -----
 
+### 7. Lost & Found Service (LFS)
+
+**Base URL:** `/api/lfs`
+
+**Entities:**
+* `Post` — represents a lost or found item announcement with status and metadata
+* `Comment` — represents a comment thread under a specific post
+
+**Endpoints List:**
+
+| Method | Path                     | Auth   | Purpose                         |
+|--------|--------------------------|--------|---------------------------------|
+| POST   | /posts                   | user   | Create a new lost/found post    |
+| GET    | /posts                   | public | List all posts with filters     |
+| GET    | /posts/{id}              | public | Get specific post details       |
+| PATCH  | /posts/{id}              | user   | Update post (author/admin only) |
+| POST   | /posts/{id}/comments     | user   | Add comment to a post           |
+| GET    | /posts/{id}/comments     | public | Get all comments for a post     |
+| PATCH  | /posts/{id}/resolve      | user   | Mark post as resolved           |
+
+**Endpoints Specs:**
+
+`POST /posts`
+
+**Request:**
+````json
+{
+  "type": "string (enum: LOST, FOUND)",
+  "title": "string",
+  "description": "string",
+  "itemCategory": "string (enum: ELECTRONICS, CLOTHING, DOCUMENTS, BOOKS, OTHER)",
+  "location": "string",
+  "contactInfo": "string (optional)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "type": "string (enum: LOST, FOUND)",
+  "title": "string",
+  "description": "string",
+  "itemCategory": "string (enum: ELECTRONICS, CLOTHING, DOCUMENTS, BOOKS, OTHER)",
+  "location": "string",
+  "contactInfo": "string",
+  "status": "string (enum: OPEN, RESOLVED)",
+  "authorId": "string (userId)",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO Date"
+}
+````
+
+`GET /posts`
+
+**Query Parameters:**
+- `type` (optional): LOST or FOUND
+- `category` (optional): item category
+- `status` (optional): OPEN or RESOLVED
+- `limit` (optional): number of posts per page (default: 20)
+- `offset` (optional): pagination offset (default: 0)
+
+**Response 200:**
+````json
+{
+  "posts": [
+    {
+      "id": "string",
+      "type": "string (enum: LOST, FOUND)",
+      "title": "string",
+      "description": "string",
+      "itemCategory": "string",
+      "location": "string",
+      "status": "string (enum: OPEN, RESOLVED)",
+      "authorId": "string",
+      "commentCount": 3,
+      "createdAt": "ISO Date",
+      "updatedAt": "ISO Date"
+    }
+  ],
+  "total": 42
+}
+````
+
+`GET /posts/{id}`
+
+**Response 200:**
+````json
+{
+  "id": "string",
+  "type": "string (enum: LOST, FOUND)",
+  "title": "string",
+  "description": "string",
+  "itemCategory": "string",
+  "location": "string",
+  "contactInfo": "string",
+  "status": "string (enum: OPEN, RESOLVED)",
+  "authorId": "string",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO Date"
+}
+````
+
+`POST /posts/{id}/comments`
+
+**Request:**
+````json
+{
+  "content": "string"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "postId": "string",
+  "authorId": "string (userId)",
+  "content": "string",
+  "createdAt": "ISO Date"
+}
+````
+
+`GET /posts/{id}/comments`
+
+**Response 200:**
+````json
+{
+  "comments": [
+    {
+      "id": "string",
+      "postId": "string",
+      "authorId": "string",
+      "content": "string",
+      "createdAt": "ISO Date"
+    }
+  ]
+}
+````
+
+`PATCH /posts/{id}/resolve`
+
+**Request:**
+````json
+{
+  "status": "RESOLVED"
+}
+````
+
+**Response 200:**
+````json
+{
+  "id": "string",
+  "status": "RESOLVED",
+  "updatedAt": "ISO Date"
+}
+````
+
+-----
+
+### 8. Budgeting Service (BS)
+
+**Base URL:** `/api/bs`
+
+**Entities:**
+* `Transaction` — represents income or expense transaction with categorization
+* `Balance` — current treasury balance for FAF Cab and FAF NGO
+* `DebtEntry` — represents money owed by users for damages or overuse
+
+**Endpoints List:**
+
+| Method | Path                   | Auth   | Purpose                           |
+|--------|------------------------|--------|-----------------------------------|
+| GET    | /balance               | public | Get current treasury balance      |
+| POST   | /transactions/income   | admin  | Record income transaction         |
+| POST   | /transactions/expense  | admin  | Record expense transaction        |
+| GET    | /transactions          | admin  | List all transactions with filters|
+| GET    | /reports/csv           | admin  | Download financial report as CSV  |
+| POST   | /debt                  | admin  | Add debt entry for user           |
+| GET    | /debt                  | admin  | List all debt entries             |
+| GET    | /debt/{userId}         | user   | Get debt for specific user        |
+| PATCH  | /debt/{id}             | admin  | Update debt entry (mark paid)     |
+
+**Endpoints Specs:**
+
+`GET /balance`
+
+**Response 200:**
+````json
+{
+  "fafCabBalance": {
+    "amount": 1250.75,
+    "currency": "MDL",
+    "lastUpdated": "ISO Date"
+  },
+  "fafNgoBalance": {
+    "amount": 3420.50,
+    "currency": "MDL",
+    "lastUpdated": "ISO Date"
+  }
+}
+````
+
+`POST /transactions/income`
+
+**Request:**
+````json
+{
+  "amount": 150.00,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "source": "string (enum: FAF_DONATION, PARTNER_DONATION, FUNDRAISING, OTHER)",
+  "description": "string",
+  "fundTarget": "string (enum: FAF_CAB, FAF_NGO)",
+  "referenceId": "string (optional - for linking to fundraising campaigns)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "type": "INCOME",
+  "amount": 150.00,
+  "currency": "string",
+  "source": "string",
+  "description": "string",
+  "fundTarget": "string",
+  "referenceId": "string",
+  "recordedBy": "string (userId)",
+  "createdAt": "ISO Date"
+}
+````
+
+`POST /transactions/expense`
+
+**Request:**
+````json
+{
+  "amount": 75.50,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "category": "string (enum: CONSUMABLES, EQUIPMENT, MAINTENANCE, UTILITIES, OTHER)",
+  "description": "string",
+  "fundSource": "string (enum: FAF_CAB, FAF_NGO)",
+  "receiptUrl": "string (optional)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "type": "EXPENSE",
+  "amount": 75.50,
+  "currency": "string",
+  "category": "string",
+  "description": "string",
+  "fundSource": "string",
+  "receiptUrl": "string",
+  "recordedBy": "string (userId)",
+  "createdAt": "ISO Date"
+}
+````
+
+`GET /transactions`
+
+**Query Parameters:**
+- `type` (optional): INCOME or EXPENSE
+- `startDate` (optional): ISO date
+- `endDate` (optional): ISO date
+- `fundTarget` (optional): FAF_CAB or FAF_NGO
+- `limit` (optional): default 50
+- `offset` (optional): default 0
+
+**Response 200:**
+````json
+{
+  "transactions": [
+    {
+      "id": "string",
+      "type": "string (enum: INCOME, EXPENSE)",
+      "amount": 150.00,
+      "currency": "string",
+      "description": "string",
+      "fundTarget": "string",
+      "recordedBy": "string",
+      "createdAt": "ISO Date"
+    }
+  ],
+  "total": 156
+}
+````
+
+`GET /reports/csv`
+
+**Query Parameters:**
+- `startDate` (required): ISO date
+- `endDate` (required): ISO date
+- `fundTarget` (optional): FAF_CAB or FAF_NGO
+
+**Response 200:**
+Returns CSV file with headers: `Date,Type,Amount,Currency,Description,Fund,RecordedBy`
+
+`POST /debt`
+
+**Request:**
+````json
+{
+  "userId": "string",
+  "amount": 50.00,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "reason": "string (enum: DAMAGE, OVERUSE, LOST_ITEM, OTHER)",
+  "description": "string",
+  "itemId": "string (optional - reference to damaged item)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "userId": "string",
+  "amount": 50.00,
+  "currency": "string",
+  "reason": "string",
+  "description": "string",
+  "itemId": "string",
+  "status": "string (enum: PENDING, PAID, FORGIVEN)",
+  "createdBy": "string (userId)",
+  "createdAt": "ISO Date",
+  "updatedAt": "ISO Date"
+}
+````
+
+`GET /debt`
+
+**Query Parameters:**
+- `status` (optional): PENDING, PAID, FORGIVEN
+- `userId` (optional): filter by specific user
+
+**Response 200:**
+````json
+{
+  "debts": [
+    {
+      "id": "string",
+      "userId": "string",
+      "amount": 50.00,
+      "currency": "string",
+      "reason": "string",
+      "description": "string",
+      "status": "string",
+      "createdAt": "ISO Date"
+    }
+  ],
+  "totalPending": 125.75
+}
+````
+
+`GET /debt/{userId}`
+
+**Response 200:**
+````json
+{
+  "userDebts": [
+    {
+      "id": "string",
+      "amount": 50.00,
+      "currency": "string",
+      "reason": "string",
+      "description": "string",
+      "status": "string",
+      "createdAt": "ISO Date"
+    }
+  ],
+  "totalOwed": 50.00
+}
+````
+
+`PATCH /debt/{id}`
+
+**Request:**
+````json
+{
+  "status": "string (enum: PAID, FORGIVEN)",
+  "note": "string (optional)"
+}
+````
+
+**Response 200:**
+````json
+{
+  "id": "string",
+  "status": "PAID",
+  "note": "string",
+  "updatedBy": "string (userId)",
+  "updatedAt": "ISO Date"
+}
+````
+
+-----
 
 ### 9. Fund Raising Service (FRS)
 **Base URL:** `/api/frs`
@@ -540,7 +884,7 @@ Registers a one-time guest.
       "targetType": "string (enum: ASSET, CONSUMABLE)",
       "targetSubtype": "string",
       "createdAt": "ISO Date",
-      "updatedAt": "ISO date"
+      "updatedAt": "ISO Date"
     }
   ]
 }
@@ -564,7 +908,7 @@ Registers a one-time guest.
   "targetType": "string (enum: ASSET, CONSUMABLE)",
   "targetSubtype": "string",
   "createdAt": "ISO Date",
-  "updatedAt": "ISO date"
+  "updatedAt": "ISO Date"
 }
 ````
 
@@ -591,7 +935,7 @@ Registers a one-time guest.
   "targetType": "string (enum: ASSET, CONSUMABLE)",
   "targetSubtype": "string",
   "createdAt": "ISO Date",
-  "updatedAt": "ISO date"
+  "updatedAt": "ISO Date"
 }
 ````
 
@@ -820,7 +1164,9 @@ Registers a one-time guest.
   "updatedAt": "ISO Date"
 }
 ````
+
 ## GitHub Workflow
+
 ### Branch Naming Convention
 
 Format: `type/scope/short-description`  
@@ -855,5 +1201,3 @@ Format: `type/scope/short-description`
 | Test Coverage        | Each microservice must maintain ≥ 80% |
 | Pull Requests        | PRs must have a meaningful title and a short description of the changes if needed.|
 | Versioning           | We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.<br> - `MAJOR`: breaking changes across services<br> - `MINOR`: new backward-compatible functionality<br> - `PATCH`: backward-compatible bug fixes |
-
-
