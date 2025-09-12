@@ -110,6 +110,8 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 | POST   | /users/register        | public | Register a user to the system              |
 | POST   | /users/logout          | user   | Logout user from the system                |
 
+<p align="right"><i>Table 3 – User Management Service Endpoints</i></p>
+
 #### GET /users
 - *Response 200:*
 ```json
@@ -234,6 +236,8 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 | ------ | ---------------------- | ------ | ------------------------------------------ |
 | POST   | /send_notification     | admin  | Send notification to the right persion     |
 
+<p align="right"><i>Table 4 – Notification Service Endpoints</i></p>
+
 #### POST /send_notification
 - *Response 200:*
 ```json
@@ -265,6 +269,8 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 | GET    | /consumptions          | admin  | View all consumption logs                  |
 | GET    | /consumptions/{userId} | admin  | View consumption logs by user              |
 | GET    | /alerts                | admin  | List triggered alerts (low stock, overuse) |
+
+<p align="right"><i>Table 5 – Tea Management Service Endpoints</i></p>
 
 #### POST /consumables
 - *Request:*
@@ -434,122 +440,126 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 - *Errors:* 401 Unauthorized, 403 Forbidden
 
 ### 5. Booking Service
+#### Base URL: /api/bs
+
+#### EP List:
+| Method | Path                   | Auth   | Purpose                                    |
+| ------ | ---------------------- | ------ | ------------------------------------------ |
+| POST   | /bookings              | user   | Creates a new booking for a room.          |
+| DELETE | /bookings/{bookingId}  | user   | Cancels a specific booking.                |
+
+<p align="right"><i>Table 6 – Booking Service Endpoints</i></p>
 
 ### Synchronous Communication (REST API)
 
 #### `POST /bookings`
 
-Creates a new booking for a room.
+**Query Parameters:**
+- `start` (optional): start time
+- `end` (optional): end time
 
-  * **Request Body:**
+- *Request:*
+```json
+{
+  "userId": "string",
+  "room": "string",
+  "startTime": "datetime",
+  "endTime": "datetime"
+}
+```
 
-    ```json
-    {
-      "userId": "string",
-      "room": "string",
-      "startTime": "datetime",
-      "endTime": "datetime"
-    }
-    ```
+- *Response (201 Created):*
 
-  * **Response (201 Created):**
+```json
+  {
+    "bookingId": "string",
+    "userId": "string",
+    "room": "string",
+    "startTime": "datetime",
+    "endTime": "datetime",
+    "createdAt": "datetime"
+  }
+```
 
-    ```json
+- *Error* 400 Bad Request, 409 Conflict (time slot taken)
+
+#### `GET /bookings?start={date}&end={date}`
+
+Gets all bookings within a specified date range.
+- *Response (200 OK):*
+```json
+  [
     {
       "bookingId": "string",
       "userId": "string",
       "room": "string",
       "startTime": "datetime",
-      "endTime": "datetime",
-      "createdAt": "datetime"
+      "endTime": "datetime"
     }
-    ```
-
-  * **Error Responses:** `400 Bad Request`, `409 Conflict (time slot taken)`
-
-#### `GET /bookings?start={date}&end={date}`
-
-Gets all bookings within a specified date range.
-
-  * **Response (200 OK):**
-    ```json
-    [
-      {
-        "bookingId": "string",
-        "userId": "string",
-        "room": "string",
-        "startTime": "datetime",
-        "endTime": "datetime"
-      }
-    ]
-    ```
+  ]
+```
 
 #### `DELETE /bookings/{bookingId}`
 
-Cancels a specific booking.
-
-  * **Response (204 No Content)**
-  * **Error Responses:** `403 Forbidden`, `404 Not Found`
-
------
+- *Response (204 No Content)*
+- *Error:* 403 Forbidden, 404 Not Found
 
 ### 6. Check-in Service
+
+#### Base URL: /api/chs
+#### EP List:
+| Method | Path                                       | Auth   | Purpose                                    |
+| ------ | ------------------------------------------ | ------ | ------------------------------------------ |
+| POST   | /status/current                            | admin  | Gets a list of all users currently inside FAFCab.          |
+| GET    | /history/{userId}?start={date}&end={date}  | admin  | Gets the entry and exit history for a specific user within a date range.  |
+| POST   | /guest                                     | admin  | Registers a one-time guest.  |
+
+<p align="right"><i>Table 7 – Check-in Service Endpoints</i></p>
 
 ### Synchronous Communication (REST API)
 
 #### `GET /status/current`
-
-Gets a list of all users currently inside FAFCab.
-
-  * **Response (200 OK):**
-    ```json
-    [
-      {
-        "userId": "string",
-        "nickname": "string",
-        "checkInTime": "datetime"
-      }
-    ]
-    ```
+- *Response (200 OK):*
+```json
+  [
+    {
+      "userId": "string",
+      "nickname": "string",
+      "checkInTime": "datetime"
+    }
+  ]
+```
 
 #### `GET /history/{userId}?start={date}&end={date}`
-
-Gets the entry and exit history for a specific user within a date range.
-
-  * **Response (200 OK):**
-    ```json
-    [
-      {
-        "event_type": "string",
-        "timestamp": "datetime"
-      }
-    ]
-    ```
-  * **Error Responses:** `404 Not Found`
+- *Response (200 OK):*
+```json
+  [
+    {
+      "event_type": "string",
+      "timestamp": "datetime"
+    }
+  ]
+```
+- *Error:* 404 Not Found
 
 #### `POST /guest`
-
-Registers a one-time guest.
-
-  * **Request Body:**
-    ```json
-    {
-      "hostUserId": "string",
-      "guestName": "string"
-    }
-    ```
-  * **Response (201 Created):**
-    ```json
-    {
-      "guestLogId": "string",
-      "guestName": "string",
-      "hostUserId": "string",
-      "entryTime": "datetime"
-    }
-    ```
-  * **Error Responses:** `400 Bad Request`
-
------
+- *Request Body:*
+```json
+  {
+    "hostUserId": "string",
+    "guestName": "string"
+  }
+```
+- *Response (201 Created):*
+```json
+  {
+    "guestLogId": "string",
+    "guestName": "string",
+    "hostUserId": "string",
+    "entryTime": "datetime"
+  }
+```
+*Error:* 400 Bad Request
 
 ### 7. Lost & Found Service (LFS)
 
@@ -570,6 +580,8 @@ Registers a one-time guest.
 | POST   | /posts/{id}/comments     | user   | Add comment to a post           |
 | GET    | /posts/{id}/comments     | public | Get all comments for a post     |
 | PATCH  | /posts/{id}/resolve      | user   | Mark post as resolved           |
+
+<p align="right"><i>Table 8 – Lost & Found Service Endpoints</i></p>
 
 **Endpoints Specs:**
 
@@ -733,6 +745,8 @@ Registers a one-time guest.
 | GET    | /debt                  | admin  | List all debt entries             |
 | GET    | /debt/{userId}         | user   | Get debt for specific user        |
 | PATCH  | /debt/{id}             | admin  | Update debt entry (mark paid)     |
+
+<p align="right"><i>Table 9 – Budgeting Service Endpoints</i></p>
 
 **Endpoints Specs:**
 
@@ -970,6 +984,8 @@ Returns CSV file with headers: `Date,Type,Amount,Currency,Description,Fund,Recor
 | GET    | /frs/initiative/{id}/donations| admin      | list donations for a fund  |
 | POST   | /initiatives/{id}/finalize    | system use | finalize fund              |
 
+<p align="right"><i>Table 10 – Fund Raising Service Endpoints</i></p>
+
 **Endpoints Specs:**
 
 `POST /initiatives`
@@ -1121,6 +1137,8 @@ Returns CSV file with headers: `Date,Type,Amount,Currency,Description,Fund,Recor
 | PATCH  | rentals/{rentalId}/return    | user        | return rental              |
 | POST   | /objects/{id}/damage         | user        | report damage              |
 | PATCH  | /objects/{id}                | user        | update the state of an obj |
+
+<p align="right"><i>Table 11 – Sharing Service Endpoints</i></p>
 
 **Endpoints Specs:**
 
@@ -1321,12 +1339,16 @@ Format: `type/scope/short-description`
 | chore   | Maintenance/config | chore/cpr/add-submodules |
 | docs    | Documentation only | docs/cpr/readme-structure |
 
+<p align="right"><i>Table 12 – Branch naming convention types</i></p>
+
 ### Branch Rules
 
 | Branch | Merge Strategy | Description |
 |--------|----------------|-------------|
 | `main` | **Rebase and merge** | Clean, linear history for production releases |
 | `dev`  | **Squash and merge** | Condensed commits for feature integration |
+
+<p align="right"><i>Table 13 – Merging rules</i></p>
 
 **Branch Protection:**
 - Direct pushes to `main` and `dev` are prohibited
@@ -1344,6 +1366,8 @@ Format: `type/scope/short-description`
 | Test Coverage        | Each microservice must maintain ≥ 80% |
 | Pull Requests        | PRs must have a meaningful title and a short description of the changes if needed.|
 | Versioning           | We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.<br> - `MAJOR`: breaking changes across services<br> - `MINOR`: new backward-compatible functionality<br> - `PATCH`: backward-compatible bug fixes |
+
+<p align="right"><i>Table 14 – Contribution rules table</i></p>
 
 ### PR Structure Guide
 
