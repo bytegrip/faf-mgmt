@@ -12,6 +12,7 @@
     - [1. User Management Service](#1-user-management-service)
     - [2. Notification Service](#2-notification-service)
     - [3. Tea Management Service](#3-tea-management-service)
+    - [4. Communication Service](#3-communication-service)
     - [5. Booking Service](#5-booking-service)
     - [6. Check-in Service](#6-check-in-service)
     - [7. Lost & Found Service](#7-lost--found-service-lfs)
@@ -51,7 +52,7 @@
 |   | Services                       | Student Assigned    | Language/Framework   | DB                             | Motivation | Trade-offs         |
 |---|--------------------------------|---------------------|----------------------|--------------------------------|------------|--------------------|
 | 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) | PostgreSQL | Nest.js offers good structure for organizing code, catches errors early, works well with Discord API. PosgresSQL is a reliable data storage, good for handling user relationships and permissions. | Nest.js takes more time to learn than simpler frameworks, but makes code easier to maintain. PostgresSQL has a higher resource usage vs NoSQL, but is necessary for consistent relationships. |
-| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                                |            |  |
+| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |  Postgresql  |           Go provides simplicity, speed, and strong concurrency support, which fits well for logging many small consumption events. PostgreSQL offers strong relational handling and reporting features, making it ideal for tracking consumables and user usage history. REST with JSON ensures smooth interoperability with other FAFCab services. | Go requires more manual coding for things like validation and ORM compared to heavier frameworks, but in return you get lightweight, performant services with low resource usage and easy deployment.
 | 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js handles I/O-heavy tasks and real-time camera check-ins with its event-driven, non-blocking model. PostgreSQL provides ACID reliability to prevent double-bookings, while MongoDB’s flexible schema and fast writes suit large volumes of time-series logs (check-ins/check-outs). | The single-threaded nature of Node.js makes CPU-heavy tasks (e.g., video or ML processing) inefficient unless you offload them to worker processes or native modules. PostgreSQL comes with a more rigid schema model and greater complexity when scaling horizontally or handling very high write volumes. MongoDB lacks the same relational constraints and strict consistency. |
 | 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    | PostgreSQL                     | C# provides excellent decimal handling for financial calculations and strong type safety for money operations. ASP.NET Core offers robust validation and security features essential for financial data. PostgreSQL ensures ACID compliance for transaction integrity and supports full-text search for Lost & Found posts. | Heavier resource usage compared to lighter frameworks. More complex setup and deployment process. Less flexibility for rapid prototyping compared to dynamic languages. |
 | 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    | PostgreSQL                     | ASP.NET Core with PostgreSQL offers reliability, security, and strong transactional guarantees, well suited for handling financial and resource-sharing workflows.           | Adds overhead in schema management and is heavier compared to lighter frameworks, which can slow iteration and increase resource usage.      |
@@ -226,7 +227,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
 
-### 4. Notification Service
+### 2. Notification Service
 #### Base URL: /api/ntf
 
 #### EP List:
@@ -427,6 +428,196 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
       "amountUsed": 50,
       "limit": 20,
       "createdAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized, 403 Forbidden
+### 4. Communication Service
+#### Base URL: /api/tms
+#### Entities:
+- **Chat** - represents a public or private conversation between users.
+- **Message** - a message sent by a user in a chat.
+- **Ban** - a moderation action applied to a user (global or per-chat).
+- **BannedWord** - represents a word blocked by censorship rules.
+
+#### EP List:
+| Method | Path                 | Auth  | Purpose                                         |
+| ------ | -------------------- | ----- | ----------------------------------------------- |
+| POST   | /chats               | user  | Create a chat (public or private, with members) |
+| GET    | /chats/{id}          | user  | Get chat details (members, type)                |
+| GET    | /chats               | user  | List chats user participates in                 |
+| POST   | /chats/{id}/messages | user  | Send a message to a chat                        |
+| GET    | /chats/{id}/messages | user  | Get messages in a chat                          |
+| POST   | /bans                | admin | Ban a user (timed or permanent)                 |
+| GET    | /bans                | admin | List active bans                                |
+| POST   | /censorship/words    | admin | Add a banned word                               |
+| GET    | /censorship/words    | admin | List banned words                               |
+
+#### POST /chats
+- *Request:*
+```json
+{
+  "name": "Study Group",
+  "type": "PUBLIC",             // or "PRIVATE"
+  "memberIds": ["uuid1", "uuid2"]
+}
+```
+- *Response 201:*
+```json
+{
+  "id": "uuid-chat",
+  "name": "Study Group",
+  "type": "PUBLIC",
+  "members": ["uuid1", "uuid2"],
+  "createdBy": "uuid-creator",
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 404 Not Found, 409 Conflict
+#### GET /chats/{id}
+- *Response 200:*
+```json
+{
+  "id": "uuid-chat",
+  "name": "Study Group",
+  "type": "PUBLIC",
+  "members": ["uuid1", "uuid2"],
+  "createdBy": "uuid-creator",
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### GET /chats
+- *Response 200:*
+```json
+{
+  "chats": [
+    {
+      "id": "uuid-chat1",
+      "name": "Study Group",
+      "type": "PUBLIC",
+      "lastMessageAt": "ISO Date"
+    },
+    {
+      "id": "uuid-chat2",
+      "name": "Private DM",
+      "type": "PRIVATE",
+      "lastMessageAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized
+#### POST /chats/{id}/messages
+- *Request:*
+```json
+{
+  "senderId": "uuid1",
+  "content": "This message will be filtered!"
+}
+```
+- *Response 201:*
+```json
+{
+  "id": "uuid-message",
+  "chatId": "uuid-chat",
+  "senderId": "uuid1",
+  "content": "This message will be filtered!",
+  "censored": false,
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### GET /chats/{id}/messages
+- *Response 200:*
+```json
+{
+  "messages": [
+    {
+      "id": "uuid-message1",
+      "senderId": "uuid1",
+      "content": "Hello!",
+      "censored": false,
+      "createdAt": "ISO Date"
+    },
+    {
+      "id": "uuid-message2",
+      "senderId": "uuid2",
+      "content": "***",
+      "censored": true,
+      "createdAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized, 403 Forbidden, 404 Not Found
+#### POST /bans
+- *Request:*
+```json
+{
+  "userId": "uuid-user",
+  "chatId": "uuid-chat",       // optional, null = global ban
+  "type": "TEMPORARY",         // or "PERMANENT"
+  "duration": "PT24H"          // ISO 8601 duration for temporary bans
+}
+```
+- *Response 201:*
+```json
+{
+  "id": "uuid-ban",
+  "userId": "uuid-user",
+  "chatId": "uuid-chat",
+  "type": "TEMPORARY",
+  "duration": "PT24H",
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict
+#### GET /bans
+- *Response 200:*
+```json
+{
+  "bans": [
+    {
+      "id": "uuid-ban",
+      "userId": "uuid-user",
+      "chatId": "uuid-chat",
+      "type": "TEMPORARY",
+      "expiresAt": "ISO Date"
+    }
+  ]
+}
+```
+- *Errors:* 401 Unauthorized, 403 Forbidden
+#### POST /censorship/words
+- *Request:*
+```json
+{
+  "word": "spoiler"
+}
+```
+- *Response 201:*
+```json
+{
+  "id": "uuid-word",
+  "word": "spoiler",
+  "createdAt": "ISO Date"
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden, 409 Conflict
+#### GET /censorship/words
+- *Response 200:*
+```json
+{
+  "words": [
+    {
+      "id": "uuid-word1",
+      "word": "spoiler"
+    },
+    {
+      "id": "uuid-word2",
+      "word": "curse"
     }
   ]
 }
