@@ -695,6 +695,181 @@ Registers a one-time guest.
 ````
 
 `GET /posts/{id}/comments`
+**Response 200:**
+````json
+{
+  "comments": [
+    {
+      "id": "string",
+      "postId": "string",
+      "authorId": "string",
+      "content": "string",
+      "createdAt": "ISO Date"
+    }
+  ]
+}
+````
+
+`PATCH /posts/{id}/resolve`
+
+**Request:**
+````json
+{
+  "status": "RESOLVED"
+}
+````
+
+**Response 200:**
+````json
+{
+  "id": "string",
+  "status": "RESOLVED",
+  "updatedAt": "ISO Date"
+}
+````
+
+-----
+
+### 8. Budgeting Service (BS)
+
+**Base URL:** `/api/bs`
+
+**Entities:**
+* `Transaction` — represents income or expense transaction with categorization
+* `Balance` — current treasury balance for FAF Cab and FAF NGO
+* `DebtEntry` — represents money owed by users for damages or overuse
+
+**Endpoints List:**
+
+| Method | Path                   | Auth   | Purpose                           |
+|--------|------------------------|--------|-----------------------------------|
+| GET    | /balance               | public | Get current treasury balance      |
+| POST   | /transactions/income   | admin  | Record income transaction         |
+| POST   | /transactions/expense  | admin  | Record expense transaction        |
+| GET    | /transactions          | admin  | List all transactions with filters|
+| GET    | /reports/csv           | admin  | Download financial report as CSV  |
+| POST   | /debt                  | admin  | Add debt entry for user           |
+| GET    | /debt                  | admin  | List all debt entries             |
+| GET    | /debt/{userId}         | user   | Get debt for specific user        |
+| PATCH  | /debt/{id}             | admin  | Update debt entry (mark paid)     |
+
+**Endpoints Specs:**
+
+`GET /balance`
+
+**Response 200:**
+````json
+{
+  "fafCabBalance": {
+    "amount": 1250.75,
+    "currency": "MDL",
+    "lastUpdated": "ISO Date"
+  },
+  "fafNgoBalance": {
+    "amount": 3420.50,
+    "currency": "MDL",
+    "lastUpdated": "ISO Date"
+  }
+}
+````
+
+`POST /transactions/income`
+
+**Request:**
+````json
+{
+  "amount": 150.00,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "source": "string (enum: FAF_DONATION, PARTNER_DONATION, FUNDRAISING, OTHER)",
+  "description": "string",
+  "fundTarget": "string (enum: FAF_CAB, FAF_NGO)",
+  "referenceId": "string (optional - for linking to fundraising campaigns)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "type": "INCOME",
+  "amount": 150.00,
+  "currency": "string",
+  "source": "string",
+  "description": "string",
+  "fundTarget": "string",
+  "referenceId": "string",
+  "recordedBy": "string (userId)",
+  "createdAt": "ISO Date"
+}
+````
+
+`POST /transactions/expense`
+
+**Request:**
+````json
+{
+  "amount": 75.50,
+  "currency": "string (enum: MDL, EUR, USD)",
+  "category": "string (enum: CONSUMABLES, EQUIPMENT, MAINTENANCE, UTILITIES, OTHER)",
+  "description": "string",
+  "fundSource": "string (enum: FAF_CAB, FAF_NGO)",
+  "receiptUrl": "string (optional)"
+}
+````
+
+**Response 201:**
+````json
+{
+  "id": "string",
+  "type": "EXPENSE",
+  "amount": 75.50,
+  "currency": "string",
+  "category": "string",
+  "description": "string",
+  "fundSource": "string",
+  "receiptUrl": "string",
+  "recordedBy": "string (userId)",
+  "createdAt": "ISO Date"
+}
+````
+
+`GET /transactions`
+
+**Query Parameters:**
+- `type` (optional): INCOME or EXPENSE
+- `startDate` (optional): ISO date
+- `endDate` (optional): ISO date
+- `fundTarget` (optional): FAF_CAB or FAF_NGO
+- `limit` (optional): default 50
+- `offset` (optional): default 0
+
+**Response 200:**
+````json
+{
+  "transactions": [
+    {
+      "id": "string",
+      "type": "string (enum: INCOME, EXPENSE)",
+      "amount": 150.00,
+      "currency": "string",
+      "description": "string",
+      "fundTarget": "string",
+      "recordedBy": "string",
+      "createdAt": "ISO Date"
+    }
+  ],
+  "total": 156
+}
+````
+
+`GET /reports/csv`
+
+**Query Parameters:**
+- `startDate` (required): ISO date
+- `endDate` (required): ISO date
+- `fundTarget` (optional): FAF_CAB or FAF_NGO
+
+**Response 200:**
 
 **Response 200:**
 ````json
