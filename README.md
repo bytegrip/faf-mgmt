@@ -9,6 +9,11 @@
   -  [Data Management Across Services](#data-management-across-services)
   -  [Endpoints Definition](#endpoints-definition)
   - [Services Endpoints](#services-eps)
+    - [1. User Management Service](#1-user-management-service)
+    - [2. Notification Service](#2-notification-service)
+    - [3. Tea Management Service](#3-tea-management-service)
+    - [5. Booking Service](#5-booking-service)
+    - [6. Check-in Service](#6-check-in-service)
     - [7. Lost & Found Service](#7-lost--found-service-lfs)
     - [8. Budgeting Service](#8-budgeting-service-bs)
     - [9. Fund Raising Service](#9-fund-raising-service-frs)
@@ -23,7 +28,7 @@
 ### Services Overview
 | Service Name | Core Responsibilities (Boundaries) |
 | :--- | :--- |
-| **User Management** | • Manages user profiles (name, nickname, role, group).<br>• Central source of truth for user identity.<br>• Integrates with Discord to fetch and sync community member data. |
+| **User Management** | • Handles user registration, login and authentication.<br>• Stores user profiles (name, nickname, group, role).<br>• Central source of truth for user identity. <br>• Integrates with Discord API to fetch user data. |
 | **Notification** | • Handles all outgoing communications (e.g., email, Discord DMs).<br>• Sends alerts based on events from other services (e.g., low supplies, new bookings).<br>• Ensures timely and targeted delivery of messages. |
 | **Tea Management** | • Tracks inventory levels of all consumables (tea, sugar, cups, markers).<br>• Logs which user consumes which items and when.<br>• Triggers notifications for low stock or excessive resource usage. |
 | **Communication** | • Facilitates real-time chat between users (public and private channels).<br>• Allows users to find each other by nickname.<br>• Enforces communication rules through word censorship and user bans. |
@@ -45,9 +50,9 @@
 
 |   | Services                       | Student Assigned    | Language/Framework   | DB                             | Motivation | Trade-offs         |
 |---|--------------------------------|---------------------|----------------------|--------------------------------|------------|--------------------|
-| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                                |            |        |
+| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) | PostgreSQL | Nest.js offers good structure for organizing code, catches errors early, works well with Discord API. PosgresSQL is a reliable data storage, good for handling user relationships and permissions. | Nest.js takes more time to learn than simpler frameworks, but makes code easier to maintain. PostgresSQL has a higher resource usage vs NoSQL, but is necessary for consistent relationships. |
 | 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                                |            |  |
-| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
+| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js handles I/O-heavy tasks and real-time camera check-ins with its event-driven, non-blocking model. PostgreSQL provides ACID reliability to prevent double-bookings, while MongoDB’s flexible schema and fast writes suit large volumes of time-series logs (check-ins/check-outs). | The single-threaded nature of Node.js makes CPU-heavy tasks (e.g., video or ML processing) inefficient unless you offload them to worker processes or native modules. PostgreSQL comes with a more rigid schema model and greater complexity when scaling horizontally or handling very high write volumes. MongoDB lacks the same relational constraints and strict consistency. |
 | 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    | PostgreSQL                     | C# provides excellent decimal handling for financial calculations and strong type safety for money operations. ASP.NET Core offers robust validation and security features essential for financial data. PostgreSQL ensures ACID compliance for transaction integrity and supports full-text search for Lost & Found posts. | Heavier resource usage compared to lighter frameworks. More complex setup and deployment process. Less flexibility for rapid prototyping compared to dynamic languages. |
 | 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    | PostgreSQL                     | ASP.NET Core with PostgreSQL offers reliability, security, and strong transactional guarantees, well suited for handling financial and resource-sharing workflows.           | Adds overhead in schema management and is heavier compared to lighter frameworks, which can slow iteration and increase resource usage.      |
 <p align="right"><i>Table 2 – Services & Technologies</i></p>
@@ -84,6 +89,164 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 
 ## Services EPs
 
+### 1. User Management Service
+#### Base URL: /api/ums
+#### Entities:
+- **User** - registered or potential user in the FAF Cab Management Platform.
+- **OTP** - handles OTP verification for user registration process.
+#### Query parameters:
+- **role** (optional) - Filter by role ("student", "teacher", "admin")
+- **group** (optional) - Filter by group
+- **page** (optional) - Page number for pagination
+- **limit** (optional) - Number of users per page
+
+#### EP List:
+| Method | Path                   | Auth   | Purpose                                    |
+| ------ | ---------------------- | ------ | ------------------------------------------ |
+| GET    | /users                 | admin  | Get the list of all users (members from FAF Community Server) |
+| GET    | /users/:id             | user   | Get a specific user                        |
+| POST   | /users/login           | public | Login a user to the system                 |
+| POST   | /send_otp              | public | Send OTP to the user for registering       |
+| POST   | /users/register        | public | Register a user to the system              |
+| POST   | /users/logout          | user   | Logout user from the system                |
+
+#### GET /users
+- *Response 200:*
+```json
+{
+  "users": [
+    {
+      "id": "string",
+      "username": "string",
+      "nickname": "string",
+      "email": "string",
+      "group": "string",
+      "role": ["string"], // "student", "teacher", "admin"
+      "discordId": "string",
+      "isRegistered": "boolean",
+      "createdAt": "datetime",
+      "lastLoginAt": "datetime"
+    }
+  ],
+  "pagination": {
+    "page": "number",
+    "limit": "number",
+    "total": "number",
+    "totalPages": "number"
+  }
+}
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+#### GET /users/:id
+- *Response 200:*
+```json
+  {
+    "id": "string",
+    "username": "string",
+    "nickname": "string",
+    "email": "string",
+    "group": "string",
+    "role": ["string"], // "student", "teacher", "admin"
+    "discordId": "string",
+    "isActive": "boolean",
+    "createdAt": "datetime",
+    "lastLoginAt": "datetime"
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+#### POST /users/login
+- *Request:*
+```json
+  {
+    "username": "string",
+    "password": "string",
+  }
+```
+
+- *Response 200:*
+```json
+  {
+    "token": "string", // JWT
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+#### POST /send_otp
+- *Request:*
+```json
+  {
+    "username": "string"
+  }
+```
+
+- *Response 200:*
+```json
+  {
+    "success": true,
+    "message": "OTP sent successfully",
+    "otpExpiresAt": "datetime"
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+#### POST /users/register
+- *Request:*
+```json
+  {
+    "username": "string",
+    "otp": "string",
+    "password": "string",
+  }
+```
+
+- *Response 201:*
+```json
+  {
+    "token": "string", // JWT
+    "user": {
+      "id": "string",
+      "username": "string",
+      "group": "string",
+      "role": "string",
+      "createdAt": "datetime"
+    },
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+#### POST /users/logout
+- *Response 200:*
+```json
+  {
+    "success": true,
+    "message": "Logged out successfully"
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+### 4. Notification Service
+#### Base URL: /api/ntf
+
+#### EP List:
+| Method | Path                   | Auth   | Purpose                                    |
+| ------ | ---------------------- | ------ | ------------------------------------------ |
+| POST   | /send_notification     | admin  | Send notification to the right persion     |
+
+#### POST /send_notification
+- *Response 200:*
+```json
+  {
+    "messageType": "string", // "dm" or "channel"
+    "username": "string",
+    "channelId": "string",
+    "message": "string"
+  }
+```
+- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+
+
 ### 3. Tea Management Service
 #### Base URL: /api/tms
 #### Entities:
@@ -97,7 +260,7 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 | POST   | /consumables           | admin  | Add a new consumable item                  |
 | GET    | /consumables           | public | List all consumables with stock levels     |
 | GET    | /consumables/{id}      | public | Get details of a consumable                |
-| PUT  | /consumables/{id}      | admin  | Update stock levels or details             |
+| PUT    | /consumables/{id}      | admin  | Update stock levels or details             |
 | POST   | /consumptions          | user   | Log a consumption event                    |
 | GET    | /consumptions          | admin  | View all consumption logs                  |
 | GET    | /consumptions/{userId} | admin  | View consumption logs by user              |
@@ -330,7 +493,7 @@ Cancels a specific booking.
 
 -----
 
-### Asynchronous Communication (Events via RabbitMQ)
+### Asynchronous Communication
 
 #### Event: `booking.created`
 
@@ -377,7 +540,7 @@ Gets the entry and exit history for a specific user within a date range.
     ```json
     [
       {
-        "type": "string",
+        "event_type": "string",
         "timestamp": "datetime"
       }
     ]
