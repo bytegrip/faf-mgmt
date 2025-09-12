@@ -3,7 +3,6 @@
 ## Table of Contents
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
-        - [Services 1 & 2](#services-1--2)
     - [Architecture Diagram](#architecture-diagram)
 - [Technologies and Communication](#technologies-and-communication)
 - [Communication Contract](#communication-contract)
@@ -12,6 +11,10 @@
   - [Services Endpoints](#services-eps)
     - [9. Fund Raising Service](#9-fund-raising-service-frs)
     - [10. Sharing Service](#10-sharing-service-shs)
+- [GitHub Workflow](#github-workflow)
+  - [Branch Naming Convention](#branch-naming-convention)
+  - [Branch Rules](#branch-rules)
+  - [Contribution Rules](#contribution-rules)
 ## Service Boundaries
 
 ### Services Overview
@@ -28,7 +31,7 @@
 | **Fund Raising** | • Allows admins to create and manage fundraising campaigns for specific items.<br>• Tracks user donations towards a goal within a set timeframe.<br>• Orchestrates the registration of newly acquired items into other relevant services (e.g., Sharing, Budgeting). |
 | **Sharing** | • Manages the inventory of multi-use, non-consumable items (games, cables, kettles).<br>• Handles the "renting" and "returning" lifecycle of shared objects.<br>• Tracks the state/condition of each item and its ownership (personal or FAF). |
 | 
-<p align="right"><i>Table 1 – Example Services Boundaries</i></p>
+<p align="right"><i>Table 1 – Services Boundaries</i></p>
 
 
 [//]: # (### 7. Lost & Found Service)
@@ -61,17 +64,18 @@
 ## Architecture Diagram
 
 ![FAF Cab Logo](./assets/fafcab.png)
+<p align="right"><i>Figure 1 – Architecture Diagram</i></p>
 
 ## Technologies and Communication
 
-|   | Services                       | Student Assigned    | Language/Framework   | DB                  | Motivation | Trade-offs         |
-|---|--------------------------------|---------------------|----------------------|-----------------------|------------|--------------------|
-| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                     |            |        |
-| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                     |            |  |
-| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB   | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
-| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |                     |            |    |
-| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    |                     |            |       |
-<p align="right"><i>Table X – Services & Technologies</i></p>
+|   | Services                       | Student Assigned    | Language/Framework   | DB                             | Motivation | Trade-offs         |
+|---|--------------------------------|---------------------|----------------------|--------------------------------|------------|--------------------|
+| 1 | User Management & Notification | Colța Maria         | Typescript (Nest.js) |                                |            |        |
+| 2 | Tea Management & Communication | Munteanu Ecaterina  | Golang ()            |                                |            |  |
+| 3 | Cab Booking & Check-in         | Friptu Ludmila      | Node.js (Express.js) | PostgreSQL, MongoDB            | Node.js is excellent for I/O-heavy tasks like handling API requests and integrating with Google Calendar. PostgreSQL is chosen for its ACID compliance and reliability, which are critical for preventing double-bookings and maintaining a consistent schedule. And for check-in service, the event-driven, non-blocking nature of Node.js is perfect for processing a real-time feed from a camera. MongoDB is used for its flexible schema and fast write capabilities, making it ideal for storing large volumes of time-series log data (check-ins and check-outs). |     |
+| 4 | Lost & Found & Budgeting       | Schipschi Daniel    | C# (ASP.NET Core)    |                                |            |    |
+| 5 | Fund Raising & Sharing         | Novac Felicia       | C# (ASP.NET Core)    | PostgreSQL                     | ASP.NET Core with PostgreSQL offers reliability, security, and strong transactional guarantees, well suited for handling financial and resource-sharing workflows.           | Adds overhead in schema management and is heavier compared to lighter frameworks, which can slow iteration and increase resource usage.      |
+<p align="right"><i>Table 2 – Services & Technologies</i></p>
 
 We’ve chosen **REST over HTTP** as the communication pattern for all the services, because it’s quite simple, widely supported, especially across the three chosen stacks. It matches the needs of our business case, such that services must expose predictable, resource-oriented APIs. In this case, we’ll also benefit from its _stateless_ nature, where each call will already contain all the necessary context, simplifying future scaling as mentioned. In addition, REST integrates well with _Swagger_, making it easier to document and test, which in our case is very important you know :)
 But of course there are trade-offs. REST is not optimal for real-time features, as in our case is the Communication Service, since it lacks streaming or push support. It also increases coupling because services must call each other directly to complete workflows. Even so, given that most of our operations are transactional, we’re ok )
@@ -819,7 +823,7 @@ Registers a one-time guest.
 ## GitHub Workflow
 ### Branch Naming Convention
 
-Format: type/scope/short-description  
+Format: `type/scope/short-description`  
 
 | Type     | Description | Example |
 |----------|-------------|---------|
@@ -847,6 +851,9 @@ Format: type/scope/short-description
 |----------------------|--------|
 | Code Review          | Minimum 2 contributor approvals before merging into dev or main |
 | Commit Security      | All commits must pass GitGuardian checks (no secrets, no .env files) |
+| Branch Naming        | All feature branches must pass the **Branch Name Check** action, enforcing the convention `type/scope/short-description` |
 | Test Coverage        | Each microservice must maintain ≥ 80% |
+| Pull Requests        | PRs must have a meaningful title and a short description of the changes if needed.|
+| Versioning           | We follow **Semantic Versioning (SemVer)**: `MAJOR.MINOR.PATCH`.<br> - `MAJOR`: breaking changes across services<br> - `MINOR`: new backward-compatible functionality<br> - `PATCH`: backward-compatible bug fixes |
 
 
