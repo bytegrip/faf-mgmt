@@ -493,26 +493,6 @@ Cancels a specific booking.
 
 -----
 
-### Asynchronous Communication
-
-#### Event: `booking.created`
-
-  * **Payload:** The full booking object, same as the `201 Created` response.
-  * **Purpose:** Allows the Notification Service to listen for new bookings and send confirmations.
-
-#### Event: `booking.cancelled`
-
-  * **Payload:**
-    ```json
-    {
-      "bookingId": "string",
-      "userId": "string"
-    }
-    ```
-  * **Purpose:** Notifies other services that a booking has been removed.
-
------
-
 ### 6. Check-in Service
 
 ### Synchronous Communication (REST API)
