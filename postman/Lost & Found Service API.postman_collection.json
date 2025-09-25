@@ -1,0 +1,280 @@
+{
+	"info": {
+		"_postman_id": "89f619f0-7162-4baa-8d26-9b1d7badcd52",
+		"name": "Lost & Found Service API",
+		"description": "API endpoints for Lost & Found Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28032772",
+		"_collection_link": "https://pinguinii.postman.co/workspace/Pingiuns~bc69e7f9-f882-48ac-83e1-f027eca75546/collection/28032772-89f619f0-7162-4baa-8d26-9b1d7badcd52?action=share&source=collection_link&creator=28032772"
+	},
+	"item": [
+		{
+			"name": "Create Post",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{userId}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"type\": 0,\n  \"title\": \"Lost iPhone 14\",\n  \"description\": \"Lost my black iPhone 14 Pro at the university library on the second floor\",\n  \"itemCategory\": 0,\n  \"location\": \"University Library, 2nd Floor\",\n  \"contactInfo\": \"john.doe@email.com\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Posts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Posts with Filters",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts?type=0&category=0&status=0&limit=10&offset=0",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "0"
+						},
+						{
+							"key": "category",
+							"value": "0"
+						},
+						{
+							"key": "status",
+							"value": "0"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Post by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts/{{postId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Post",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{userId}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"title\": \"Updated: Lost iPhone 14\",\n  \"description\": \"Updated description with more details\",\n  \"location\": \"University Library, 2nd Floor - Near Study Area\",\n  \"contactInfo\": \"john.doe@email.com or call 555-0123\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts/{{postId}}",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts",
+						"{{postId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Comment",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{userId}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"content\": \"I think I saw this phone at the lost and found desk on the first floor!\"\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts/{{postId}}/comments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts",
+						"{{postId}}",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Comments",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts/{{postId}}/comments",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts",
+						"{{postId}}",
+						"comments"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Resolve Post",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{userId}}"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": 1\n}"
+				},
+				"url": {
+					"raw": "{{baseUrl}}/api/lfs/posts/{{postId}}/resolve",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"lfs",
+						"posts",
+						"{{postId}}",
+						"resolve"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "userId",
+			"value": "user-123"
+		}
+	]
+}
