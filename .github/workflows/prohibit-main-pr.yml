@@ -11,61 +11,49 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check if PR base is dev
-        id: check-base
         run: |
+          echo "Checking PR branch policy..."
           echo "PR target branch: ${{ github.base_ref }}"
           echo "PR source branch: ${{ github.head_ref }}"
+          echo "PR number: ${{ github.event.number }}"
+          echo "PR title: ${{ github.event.pull_request.title }}"
           
           if [ "${{ github.head_ref }}" != "dev" ]; then
-            echo "ERROR: Pull requests to main must come from the 'dev' branch"
+            echo ""
+            echo "ERROR: Branch Policy Violation"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "Pull requests to 'main' must come from the 'dev' branch"
+            echo ""
             echo "Current source branch: ${{ github.head_ref }}"
             echo "Expected source branch: dev"
-            echo "check_passed=false" >> $GITHUB_OUTPUT
+            echo ""
+            echo "📋 Required Actions:"
+            echo "1. Close this PR"
+            echo "2. PR your changes into 'dev' first"
+            echo "3. Create a new PR from 'dev' to 'main'"
+            echo ""
+            echo "This policy ensures all changes go through proper review"
+            echo "and testing in the dev branch before reaching main."
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
             exit 1
           else
-            echo "SUCCESS: PR is correctly coming from 'dev' branch"
-            echo "check_passed=true" >> $GITHUB_OUTPUT
+            echo ""
+            echo "SUCCESS: Branch Policy Check Passed"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "PR is correctly coming from 'dev' branch"
+            echo "Proceeding with normal PR process..."
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
           fi
 
-      - name: Add comment on failure
+      - name: Add comment on failure (with PAT)
         if: failure()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: `**Pull Request Base Branch Check Failed**
-              
-              This pull request is targeting the \`main\` branch but is coming from \`${{ github.head_ref }}\`.
-              
-              **Required:** All pull requests to \`main\` must come from the \`dev\` branch.
-              
-              **Please:**
-              1. Close this PR
-              2. Create a new PR from \`dev\` to \`main\`
-              3. Or change the base branch of this PR to \`dev\` if appropriate
-              
-              ---
-              *This check ensures our branching strategy is followed correctly.*`
-            })
-
-      - name: Set status check
-        if: always()
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const checkPassed = '${{ steps.check-base.outputs.check_passed }}' === 'true';
-            
-            github.rest.repos.createCommitStatus({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              sha: context.payload.pull_request.head.sha,
-              state: checkPassed ? 'success' : 'failure',
-              target_url: `${context.payload.repository.html_url}/actions/runs/${context.runId}`,
-              description: checkPassed ? 
-                'PR correctly comes from dev branch' : 
-                'PR must come from dev branch',
-              context: 'branch-policy/base-branch-check'
-            })
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          curl -X POST \
+            -H "Authorization: token $GITHUB_TOKEN" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/${{ github.repository }}/issues/${{ github.event.number }}/comments \
+            -d '{
+              "body": "**Branch Policy Check Failed**\n\nThis pull request is targeting the `main` branch but is coming from `${{ github.head_ref }}`.\n\n**Required:** All pull requests to `main` must come from the `dev` branch.\n\n**Please:**\n1. Close this PR\n2. Merge your changes into `dev` first\n3. Create a new PR from `dev` to `main`\n\n---\n*This check ensures our branching strategy is followed correctly.*"
+            }' || echo "Could not add comment (check PAT_TOKEN permissions)"
