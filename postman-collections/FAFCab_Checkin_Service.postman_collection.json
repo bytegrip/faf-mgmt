@@ -1,0 +1,372 @@
+{
+  "info": {
+    "name": "FAFCab \u2014 Check-in Service",
+    "_postman_id": "9e00867c-7449-4950-b09f-9e31646ba910",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Postman collection to test the FAFCab Check-in Service (in-memory)."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3002",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "u1",
+      "type": "string"
+    },
+    {
+      "key": "nickname",
+      "value": "Marin",
+      "type": "string"
+    },
+    {
+      "key": "hostUserId",
+      "value": "u1",
+      "type": "string"
+    },
+    {
+      "key": "guestName",
+      "value": "Visitor X",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Healthz",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/healthz",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "healthz"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status is 200', () => pm.response.to.have.status(200));",
+              "pm.test('body is ok', () => pm.response.text().toLowerCase().includes('ok'));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Event \u2014 entry (internal test)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\":\"{{userId}}\",\"nickname\":\"{{nickname}}\",\"event_type\":\"entry\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "events"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('created (201)', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('has event_type entry', () => j.event_type === 'entry');",
+              "pm.test('has userId', () => !!j.userId);",
+              "pm.collectionVariables.set('lastEventTimestamp', j.timestamp);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Status \u2014 currently inside",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/status/current",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "status",
+            "current"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('is array', () => Array.isArray(j));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Event \u2014 exit (internal test)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\":\"{{userId}}\",\"nickname\":\"{{nickname}}\",\"event_type\":\"exit\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/events",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "events"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('created (201)', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('has event_type exit', () => j.event_type === 'exit');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Status \u2014 currently inside (after exit)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/status/current",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "status",
+            "current"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('is array', () => Array.isArray(j));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "History \u2014 valid range",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Set dynamic 7-day range",
+              "const now = new Date();",
+              "const start = new Date(now.getTime() - 7*24*60*60*1000);",
+              "pm.variables.set('start', start.toISOString());",
+              "pm.variables.set('end', now.toISOString());"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('status 200 or 404 if no data', () => {",
+              "  pm.expect([200,404]).to.include(pm.response.code);",
+              "});",
+              "if (pm.response.code === 200) {",
+              "  const j = pm.response.json();",
+              "  pm.test('is array', () => Array.isArray(j));",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/history/{{userId}}?start={{start}}&end={{end}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "history",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "{{start}}"
+            },
+            {
+              "key": "end",
+              "value": "{{end}}"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Register Guest \u2014 201",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"hostUserId\":\"{{hostUserId}}\",\"guestName\":\"{{guestName}}\"}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/guest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "guest"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('created (201)', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('has guestLogId', () => !!j.guestLogId);"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Register Guest \u2014 400 (missing fields)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/guest",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "guest"
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('bad request (400)', () => pm.response.to.have.status(400));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    },
+    {
+      "name": "History \u2014 invalid dates \u2192 400",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/history/{{userId}}?start=bad&end=also-bad",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "history",
+            "{{userId}}"
+          ],
+          "query": [
+            {
+              "key": "start",
+              "value": "bad"
+            },
+            {
+              "key": "end",
+              "value": "also-bad"
+            }
+          ]
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('bad request (400)', () => pm.response.to.have.status(400));"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ]
+    }
+  ]
+}
