@@ -26,4 +26,4 @@ jobs:
           git fetch origin
           git checkout dev
           git rebase origin/main
-          git push https://x-access-token:${PAT_TOKEN}@github.com/${{ github.repository }} dev --force
+          git push https://${PAT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git dev --force
