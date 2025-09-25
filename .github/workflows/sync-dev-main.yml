@@ -12,18 +12,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 
+          fetch-depth: 0
 
       - name: Set up Git
         run: |
           git config user.name "github-actions"
           git config user.email "github-actions@github.com"
 
-      - name: Rebase dev onto main and push
+      - name: Configure git to use PAT
         env:
           PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
+        run: |
+          git remote set-url origin https://${PAT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+
+      - name: Rebase dev onto main and push
         run: |
           git fetch origin
           git checkout dev
           git rebase origin/main
-          git push https://${PAT_TOKEN}@github.com/${GITHUB_REPOSITORY}.git dev --force
+          git push origin dev --force
