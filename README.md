@@ -1,6 +1,7 @@
 # FAF Management Platform
 
 ## Table of Contents
+- [Running](#running)
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
     - [Architecture Diagram](#architecture-diagram)
@@ -23,6 +24,33 @@
   - [Branch Naming Convention](#branch-naming-convention)
   - [Branch Rules](#branch-rules)
   - [Contribution Rules](#contribution-rules)
+
+## Running
+
+To run the services using Docker Compose, follow these steps:
+
+1. **Create a `.env` file** in the root of the project with the following variables:
+
+```env
+POSTGRES_DB=lostfound-service-db
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=password
+POSTGRES_PORT=5432
+LOSTFOUND_PORT=7777
+```
+
+2. **Start the services** using Docker Compose:
+
+```bash
+docker-compose up --build
+```
+
+* Wait for PostgreSQL to be ready before starting the Lost & Found service
+
+3. **Access the API**:
+   Visit `http://localhost:7777/api/lfs` to start using the service.
+
+---
 
 ## Service Boundaries
 
