@@ -21,9 +21,9 @@ jobs:
 
       - name: Rebase dev onto main and push
         env:
-          GITHUB_TOKEN: ${{ secrets.PAT_TOKEN }}
+          PAT_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
           git fetch origin
           git checkout dev
           git rebase origin/main
-          git push https://x-access-token:${GITHUB_TOKEN}@github.com/${{ github.repository }} dev --force
+          git push https://x-access-token:${PAT_TOKEN}@github.com/${{ github.repository }} dev --force
