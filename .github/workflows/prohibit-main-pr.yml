@@ -19,7 +19,7 @@ jobs:
     steps:
       - name: Check branch policy
         run: |
-          echo "Checking PR branch policy..."
+          echo "Checking PR branch policy...."
           echo "PR target branch: ${{ github.base_ref }}"
           echo "PR source branch: ${{ github.head_ref }}"
           echo "PR number: ${{ github.event.number }}"
