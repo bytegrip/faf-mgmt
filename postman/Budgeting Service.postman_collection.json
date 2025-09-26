@@ -1,0 +1,509 @@
+{
+	"info": {
+		"_postman_id": "bc8f2516-f4da-4b40-9766-b7115685289f",
+		"name": "Budgeting Service",
+		"description": "FAF Cab Management Platform - Budgeting Service API endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28032772",
+		"_collection_link": "https://pinguinii.postman.co/workspace/Pingiuns~bc69e7f9-f882-48ac-83e1-f027eca75546/collection/28032772-bc8f2516-f4da-4b40-9766-b7115685289f?action=share&source=collection_link&creator=28032772"
+	},
+	"item": [
+		{
+			"name": "Get Balance",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/bs/balance",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"balance"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Income Transaction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"amount\": 150.00,\n  \"currency\": \"MDL\",\n  \"source\": \"FafDonation\",\n  \"description\": \"Monthly donation from FAF alumni\",\n  \"fundTarget\": \"FafCab\",\n  \"referenceId\": \"DON-2024-001\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/bs/transactions/income",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"transactions",
+						"income"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Expense Transaction",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"amount\": 75.50,\n  \"currency\": \"MDL\",\n  \"category\": \"Consumables\",\n  \"description\": \"Office supplies and coffee\",\n  \"fundSource\": \"FafCab\",\n  \"receiptUrl\": \"https://example.com/receipt.pdf\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/bs/transactions/expense",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"transactions",
+						"expense"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Transactions",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/transactions",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"transactions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Transactions with Filters",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/transactions?type=Income&fundTarget=FafCab&limit=10&offset=0",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"transactions"
+					],
+					"query": [
+						{
+							"key": "type",
+							"value": "Income"
+						},
+						{
+							"key": "fundTarget",
+							"value": "FafCab"
+						},
+						{
+							"key": "limit",
+							"value": "10"
+						},
+						{
+							"key": "offset",
+							"value": "0"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download CSV Report",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/reports/csv?startDate=2024-01-01&endDate=2024-12-31",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"reports",
+						"csv"
+					],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "2024-01-01"
+						},
+						{
+							"key": "endDate",
+							"value": "2024-12-31"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Download CSV Report with Fund Filter",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/reports/csv?startDate=2024-01-01&endDate=2024-12-31&fundTarget=FafCab",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"reports",
+						"csv"
+					],
+					"query": [
+						{
+							"key": "startDate",
+							"value": "2024-01-01"
+						},
+						{
+							"key": "endDate",
+							"value": "2024-12-31"
+						},
+						{
+							"key": "fundTarget",
+							"value": "FafCab"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Debt Entry",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": \"user123\",\n  \"amount\": 50.00,\n  \"currency\": \"MDL\",\n  \"reason\": \"Damage\",\n  \"description\": \"Damaged office chair\",\n  \"itemId\": \"CHAIR-001\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get All Debts",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Debts with Filters",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt?status=Pending&userId=user123",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt"
+					],
+					"query": [
+						{
+							"key": "status",
+							"value": "Pending"
+						},
+						{
+							"key": "userId",
+							"value": "user123"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Debts (Admin)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt/user123",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt",
+						"user123"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get User Debts (User Self)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "X-User-Id",
+						"value": "user123"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "user"
+					}
+				],
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt/user123",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt",
+						"user123"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Debt (Mark as Paid)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"Paid\",\n  \"note\": \"Payment received in cash\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt/{{debt_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt",
+						"{{debt_id}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Debt (Forgive)",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "X-User-Id",
+						"value": "{{admin_user_id}}"
+					},
+					{
+						"key": "X-User-Role",
+						"value": "admin"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"status\": \"Forgiven\",\n  \"note\": \"Forgiven due to exceptional circumstances\"\n}"
+				},
+				"url": {
+					"raw": "{{base_url}}/api/bs/debt/{{debt_id}}",
+					"host": [
+						"{{base_url}}"
+					],
+					"path": [
+						"api",
+						"bs",
+						"debt",
+						"{{debt_id}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:5000"
+		},
+		{
+			"key": "admin_user_id",
+			"value": "admin123"
+		},
+		{
+			"key": "debt_id",
+			"value": "debt-id-here"
+		}
+	]
+}
