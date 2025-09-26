@@ -79,6 +79,19 @@ To populate the Lost & Found database with initial data:
 
 * Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
 
+### 2. Budgeting Service
+
+To populate the Budgeting database with initial data:
+
+1. Open a terminal in the repo.  
+2. Run the seeding script and specify the deployed service URL:
+
+```powershell
+.\seed\budgeting-service\seed.bat http://localhost:7778
+```
+
+* Replace `http://localhost:7778` with the actual URL if your service is running elsewhere.
+
 ## Service Location
 
 ### Lost Found Service
