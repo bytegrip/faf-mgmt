@@ -1,9 +1,6 @@
 # FAF Management Platform
 
 ## Table of Contents
-- [Running](#running)
-- [Seeding](#seeding)
-- [Service Location](#service-location)
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
     - [Architecture Diagram](#architecture-diagram)
@@ -26,81 +23,129 @@
   - [Branch Naming Convention](#branch-naming-convention)
   - [Branch Rules](#branch-rules)
   - [Contribution Rules](#contribution-rules)
+- [Running Services with Docker Compose](#running-services-with-docker-compose)
+- [Accessing Services](#accessing-services)
 
-## Running
+[//]: # (## Running)
 
-To run the services using Docker Compose, follow these steps:
+[//]: # ()
+[//]: # (To run the services using Docker Compose, follow these steps:)
 
-1. **Create a `.env` file** in the root of the project with the following variables:
+[//]: # ()
+[//]: # (1. **Create a `.env` file** in the root of the project with the following variables:)
 
-```env
-LFS_POSTGRES_DB=lostfound-service-db
-LFS_POSTGRES_USER=postgres
-LFS_POSTGRES_PASSWORD=password
-LFS_POSTGRES_PORT=5432
-LFS_SERVICE_PORT=7777
+[//]: # ()
+[//]: # (```env)
 
-BS_POSTGRES_DB=budgeting-service-db
-BS_POSTGRES_USER=postgres
-BS_POSTGRES_PASSWORD=password
-BS_POSTGRES_PORT=5433
-BS_SERVICE_PORT=7778
-```
+[//]: # (LFS_POSTGRES_DB=lostfound-service-db)
 
-2. **Start the services** using Docker Compose:
+[//]: # (LFS_POSTGRES_USER=postgres)
 
-```bash
-docker-compose up --build
-```
+[//]: # (LFS_POSTGRES_PASSWORD=password)
 
-* Wait for PostgreSQL to be ready before starting the Lost & Found service
+[//]: # (LFS_POSTGRES_PORT=5432)
 
-3. **Access the API**
+[//]: # (LFS_SERVICE_PORT=7777)
 
-- Lost Found Service API: [`http://localhost:7777/api/lfs`](http://localhost:7777/api/lfs)  
-- Budgeting Service API: [`http://localhost:7778/api/bs`](http://localhost:7778/api/bs)
+[//]: # ()
+[//]: # (BS_POSTGRES_DB=budgeting-service-db)
 
----
+[//]: # (BS_POSTGRES_USER=postgres)
 
-Here’s a concise README section for your seeding instructions:
+[//]: # (BS_POSTGRES_PASSWORD=password)
 
-## Seeding
+[//]: # (BS_POSTGRES_PORT=5433)
 
-### 1. Lost & Found Service
+[//]: # (BS_SERVICE_PORT=7778)
 
-To populate the Lost & Found database with initial data:
+[//]: # (```)
 
-1. Open a terminal in the repo.  
-2. Run the seeding script and specify the deployed service URL:
+[//]: # ()
+[//]: # (2. **Start the services** using Docker Compose:)
 
-```powershell
-.\seed\lostfound-service\seed.bat http://localhost:7777
-```
+[//]: # ()
+[//]: # (```bash)
 
-* Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
+[//]: # (docker-compose up --build)
 
-### 2. Budgeting Service
+[//]: # (```)
 
-To populate the Budgeting database with initial data:
+[//]: # ()
+[//]: # (* Wait for PostgreSQL to be ready before starting the Lost & Found service)
 
-1. Open a terminal in the repo.  
-2. Run the seeding script and specify the deployed service URL:
+[//]: # ()
+[//]: # (3. **Access the API**)
 
-```powershell
-.\seed\budgeting-service\seed.bat http://localhost:7778
-```
+[//]: # ()
+[//]: # (- Lost Found Service API: [`http://localhost:7777/api/lfs`]&#40;http://localhost:7777/api/lfs&#41;  )
 
-* Replace `http://localhost:7778` with the actual URL if your service is running elsewhere.
+[//]: # (- Budgeting Service API: [`http://localhost:7778/api/bs`]&#40;http://localhost:7778/api/bs&#41;)
 
-## Service Location
+[//]: # ()
+[//]: # (---)
 
-### Lost Found Service
+[//]: # ()
+[//]: # (Here’s a concise README section for your seeding instructions:)
 
-The Lost Found Service is available on Docker Hub: [lumijiez/lostfound-service](https://hub.docker.com/r/lumijiez/lostfound-service)
+[//]: # ()
+[//]: # (## Seeding)
 
-For setup instructions, refer to the `.env.example` file to see how to configure the necessary environment variables.
+[//]: # ()
+[//]: # (### 1. Lost & Found Service)
 
----
+[//]: # ()
+[//]: # (To populate the Lost & Found database with initial data:)
+
+[//]: # ()
+[//]: # (1. Open a terminal in the repo.  )
+
+[//]: # (2. Run the seeding script and specify the deployed service URL:)
+
+[//]: # ()
+[//]: # (```powershell)
+
+[//]: # (.\seed\lostfound-service\seed.bat http://localhost:7777)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.)
+
+[//]: # ()
+[//]: # (### 2. Budgeting Service)
+
+[//]: # ()
+[//]: # (To populate the Budgeting database with initial data:)
+
+[//]: # ()
+[//]: # (1. Open a terminal in the repo.  )
+
+[//]: # (2. Run the seeding script and specify the deployed service URL:)
+
+[//]: # ()
+[//]: # (```powershell)
+
+[//]: # (.\seed\budgeting-service\seed.bat http://localhost:7778)
+
+[//]: # (```)
+
+[//]: # ()
+[//]: # (* Replace `http://localhost:7778` with the actual URL if your service is running elsewhere.)
+
+[//]: # ()
+[//]: # (## Service Location)
+
+[//]: # ()
+[//]: # (### Lost Found Service)
+
+[//]: # ()
+[//]: # (The Lost Found Service is available on Docker Hub: [lumijiez/lostfound-service]&#40;https://hub.docker.com/r/lumijiez/lostfound-service&#41;)
+
+[//]: # ()
+[//]: # (For setup instructions, refer to the `.env.example` file to see how to configure the necessary environment variables.)
+
+[//]: # ()
+[//]: # (---)
 
 ## Service Boundaries
 
@@ -1700,3 +1745,52 @@ Brief description of what this PR accomplishes and why it's needed.
 - **Small (< 200 lines):** Quick review, single feature/fix
 - **Medium (200-500 lines):** Standard review, may need discussion
 - **Large (> 500 lines):** Break down if possible, requires thorough review
+
+## Running Services with Docker Compose
+This project defines all services (databases and microservices) in a single `docker-compose.yml`.  
+
+### Environment Config
+
+Each container is parameterized via environment variables.  
+A template `.env.example` is included in the root directory. To use it:
+
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` to set your desired configuration values.
+
+### Start All Services
+Build and start the entire stack:
+```bash
+docker compose up --build
+```
+Run in background:
+
+```bash
+docker compose up -d
+```
+
+### Stop All Services
+Stop containers but keep data:
+
+```bash
+docker compose down
+```
+Stop and remove everything (including volumes):
+```bash
+docker compose down -v
+```
+
+## Accessing Services
+
+| Service                | Image                                        | Exposed Port (default) | Database        | Local Access URL |
+|-------------------------|----------------------------------------------|------------------------|-----------------|------------------|
+| **User Management**     | `mashacol/user-management-service:latest`    | `${UMS_SERVICE_PORT}` (3000) | `ums_postgres` | [http://localhost:3000](http://localhost:3000) |
+| **Lost & Found Service**| `lumijiez/lostfound-service:latest`          | `${LFS_SERVICE_PORT}` (7777) | `lfs_postgres` | [http://localhost:7777](http://localhost:7777) |
+| **Budgeting Service**   | `lumijiez/budgeting-service:latest`          | `${BS_SERVICE_PORT}` (7778) | `bs_postgres`  | [http://localhost:7778](http://localhost:7778) |
+| **Booking Service**     | `lewda853/fafcab-booking-service:latest`     | `${BOOKING_PORT}` (9999)    | `mongo-booking`| [http://localhost:9999](http://localhost:9999) |
+| **Check-in Service**    | `lewda853/fafcab-checkin-service:latest`     | `${CHECKIN_PORT}` (3002)    | `mongo-checkin`| [http://localhost:3002](http://localhost:3002) |
+| **Sharing Service**     | `felycianovac/sharing-service:latest`        | `${SHARING_SERVICE_PORT}` (8081) | `sharing_postgres` | [http://localhost:8081](http://localhost:8081) |
+| **Fund Raising Service**| `felycianovac/fund-raising-service:latest`   | `${FR_SERVICE_PORT}` (8082) | `fr_postgres`  | [http://localhost:8082](http://localhost:8082) |
+| **Notification Service**| `mashacol/notification-service:latest`       | `${NS_SERVICE_PORT}` (3003) | —              | [http://localhost:3003](http://localhost:3003) |
