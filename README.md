@@ -39,6 +39,12 @@ LFS_POSTGRES_USER=postgres
 LFS_POSTGRES_PASSWORD=password
 LFS_POSTGRES_PORT=5432
 LFS_SERVICE_PORT=7777
+
+BS_POSTGRES_DB=budgeting-service-db
+BS_POSTGRES_USER=postgres
+BS_POSTGRES_PASSWORD=password
+BS_POSTGRES_PORT=5433
+BS_SERVICE_PORT=7778
 ```
 
 2. **Start the services** using Docker Compose:
@@ -49,8 +55,10 @@ docker-compose up --build
 
 * Wait for PostgreSQL to be ready before starting the Lost & Found service
 
-3. **Access the API**:
-   Visit `http://localhost:7777/api/lfs` to start using the service.
+3. **Access the API**
+
+- Lost Found Service API: [`http://localhost:7777/api/lfs`](http://localhost:7777/api/lfs)  
+- Budgeting Service API: [`http://localhost:7778/api/bs`](http://localhost:7778/api/bs)
 
 ---
 
