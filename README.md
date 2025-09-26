@@ -2,6 +2,7 @@
 
 ## Table of Contents
 - [Running](#running)
+- [Seeding](#seeding)
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
     - [Architecture Diagram](#architecture-diagram)
@@ -32,11 +33,11 @@ To run the services using Docker Compose, follow these steps:
 1. **Create a `.env` file** in the root of the project with the following variables:
 
 ```env
-POSTGRES_DB=lostfound-service-db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-POSTGRES_PORT=5432
-LOSTFOUND_PORT=7777
+LFS_POSTGRES_DB=lostfound-service-db
+LFS_POSTGRES_USER=postgres
+LFS_POSTGRES_PASSWORD=password
+LFS_POSTGRES_PORT=5432
+LFS_SERVICE_PORT=7777
 ```
 
 2. **Start the services** using Docker Compose:
@@ -51,6 +52,25 @@ docker-compose up --build
    Visit `http://localhost:7777/api/lfs` to start using the service.
 
 ---
+
+Here’s a concise README section for your seeding instructions:
+
+## Seeding
+
+### 1. Lost & Found Service
+
+To populate the Lost & Found database with initial data:
+
+1. Open a terminal in the repo.  
+2. Run the seeding script and specify the deployed service URL:
+
+```powershell
+.\seed\lostfound-service\seed.bat http://localhost:7777
+```
+
+* Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
+* The script will connect to the service and insert sample data **only if the database is empty**.
+* You can re-run the script safely; it will skip seeding if data already exists.
 
 ## Service Boundaries
 
