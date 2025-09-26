@@ -39,7 +39,6 @@ services:
       - "${LFS_POSTGRES_PORT}:5432"
     volumes:
       - lfs_postgres_data:/var/lib/postgresql/data
-      - ./seed/lostfound-service/seed.sql:/docker-entrypoint-initdb.d/seed.sql
 
 volumes:
   lfs_postgres_data:
