@@ -164,7 +164,63 @@ services:
       mongo:
         condition: service_healthy
 
+  sharing_postgres:
+    image: postgres:16
+    container_name: sharing-service-db
+    environment:
+      POSTGRES_USER: ${SHARING_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${SHARING_POSTGRES_DB}
+    ports:
+      - "${SHARING_POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - sharing_postgres_data:/var/lib/postgresql/data
+      - ./seed/sharing-service:/docker-entrypoint-initdb.d
+
+  sharing-service:
+    image: felycianovac/sharing-service:1.0.0
+    environment:
+      DB_CONNECTION: ${SHARING_DB_CONNECTION}
+      JWT_SECRET: ${SHARING_JWT_SECRET}
+      JWT_AUDIENCE: ${SHARING_JWT_AUDIENCE}
+      JWT_ISSUER: ${SHARING_JWT_ISSUER}
+      NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
+    ports:
+      - "${SHARING_SERVICE_PORT:-8081}:8080"
+    depends_on:
+      - sharing_postgres
+
+  fund-raising-service:
+    container_name: fund-raising-service
+    image: felycianovac/fund-raising-service:1.0.0
+    environment:
+      DB_CONNECTION: ${FR_DB_CONNECTION}
+      JWT_SECRET: ${FR_JWT_SECRET}
+      JWT_AUDIENCE: ${FR_JWT_AUDIENCE}
+      JWT_ISSUER: ${FR_JWT_ISSUER}
+      SHARING_SERVICE_URL: ${FR_SHARING_SERVICE_URL}
+      TEA_SERVICE_URL: ${FR_TEA_SERVICE_URL}
+    ports:
+      - "${FR_SERVICE_PORT:-8082}:8080"
+    depends_on:
+      - fr_postgres
+
+  fr_postgres:
+    image: postgres:16
+    container_name: fund-raising-service-db
+    environment:
+      POSTGRES_USER: ${FR_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${FR_POSTGRES_DB}
+    ports:
+      - "${FR_POSTGRES_PORT:-5434}:5432"
+    volumes:
+      - fr_postgres_data:/var/lib/postgresql/data
+      - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
+
 volumes:
   lfs_postgres_data:
   bs_postgres_data:
   mongo_data:
+  sharing_postgres_data:
+  fr_postgres_data:
