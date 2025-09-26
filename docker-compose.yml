@@ -1,55 +1,24 @@
-
 services:
   ums_postgres:
     image: postgres:15
     container_name: user-management-service-db
     restart: always
     environment:
-      POSTGRES_DB: ${UMS_POSTGRES_DB}
-      POSTGRES_USER: ${UMS_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${UMS_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${UMS_DB_NAME}
+      POSTGRES_USER: ${UMS_DB_USERNAME}
+      POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
     ports:
-      - "${UMS_POSTGRES_PORT}:5432"
+      - "${UMS_DB_PORT}:5432"
     volumes:
       - ums_postgres_data:/var/lib/postgresql/data
       - ./seed/user-management-service:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${UMS_POSTGRES_USER} -d ${UMS_POSTGRES_DB} || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USER} -d ${UMS_DB_NAME} || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  user-management:
-    image: lumijiez/user-management-service:latest
-    container_name: user-management-service
-    depends_on:
-      ums_postgres:
-        condition: service_healthy
-    ports:
-      - "${UMS_SERVICE_PORT}:3000"
-    environment:
-      NODE_ENV: ${UMS_NODE_ENV:-production}
-      PORT: 3000
-      DB_HOST: ums_postgres
-      DB_PORT: 5432
-      DB_NAME: ${UMS_POSTGRES_DB}
-      DB_USERNAME: ${UMS_POSTGRES_USER}
-      DB_PASSWORD: ${UMS_POSTGRES_PASSWORD}
-      JWT_SECRET: ${UMS_JWT_SECRET}
-      DISCORD_BOT_TOKEN: ${UMS_DISCORD_BOT_TOKEN:-}
-      DISCORD_GUILD_ID: ${UMS_DISCORD_GUILD_ID:-}
-    restart: always
-
-  notification:
-    image: lumijiez/notification-service:latest
-    container_name: notification-service
-    ports:
-      - "${NS_SERVICE_PORT}:3001"
-    environment:
-      NODE_ENV: ${NS_NODE_ENV:-production}
-      PORT: 3001
-    restart: always
-
+  
+  
   lfs_postgres:
     image: postgres:15
     container_name: lostfound-service-db
@@ -127,6 +96,7 @@ services:
       POSTGRES_USER: ${BS_POSTGRES_USER}
       POSTGRES_PASSWORD: ${BS_POSTGRES_PASSWORD}
       ConnectionStrings__DefaultConnection: "Host=bs_postgres;Port=5432;Database=${BS_POSTGRES_DB};Username=${BS_POSTGRES_USER};Password=${BS_POSTGRES_PASSWORD}"
+    
     restart: always
     command: >
       /bin/sh -c "
@@ -138,50 +108,17 @@ services:
       dotnet Budgeting.dll
       "
 
-   # ========== BOOKING (Mongo) ==========
   mongo-booking:
     image: mongo:7
     container_name: bookingservice
     restart: unless-stopped
-    # Expose only if you need external DB access from host; otherwise omit ports:
-    # ports:
-    #   - "27018:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
     volumes:
       - mongo_booking_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\" || exit 1"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\"  exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  mongo-init-booking:
-    image: mongo:7
-    depends_on:
-      mongo-booking:
-        condition: service_healthy
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
-      DB_NAME: ${BOOKING_DB_NAME}
-      DB_USER: ${BOOKING_DB_USER}
-      DB_PASS: ${BOOKING_DB_PASS}
-    entrypoint: ["bash","-lc"]
-    command: |
-      set -e
-      echo "Creating Booking DB user if missing..."
-      mongosh --host mongo-booking -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<'JS'
-      const { DB_NAME, DB_USER, DB_PASS } = process.env;
-      const d = db.getSiblingDB(DB_NAME);
-      if (!d.getUser(DB_USER)) {
-        d.createUser({ user: DB_USER, pwd: DB_PASS, roles: [{ role: "readWrite", db: DB_NAME }]});
-        print(`Created user ${DB_USER} in ${DB_NAME}`);
-      } else {
-        print(`User ${DB_USER} already exists in ${DB_NAME}`);
-      }
-      JS
 
   booking:
     image: lewda853/fafcab-booking-service:latest
@@ -195,51 +132,19 @@ services:
     depends_on:
       mongo-booking:
         condition: service_healthy
-      mongo-init-booking:
-        condition: service_started
-
-  # ========== CHECK-IN (Mongo) ==========
+  
+  
   mongo-checkin:
     image: mongo:7
     container_name: checkinservice
     restart: unless-stopped
-   
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
     volumes:
       - mongo_checkin_data:/data/db
     healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\" || exit 1"]
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\"  exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
-
-  mongo-init-checkin:
-    image: mongo:7
-    depends_on:
-      mongo-checkin:
-        condition: service_healthy
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
-      DB_NAME: ${CHECKIN_DB_NAME}
-      DB_USER: ${CHECKIN_DB_USER}
-      DB_PASS: ${CHECKIN_DB_PASS}
-    entrypoint: ["bash","-lc"]
-    command: |
-      set -e
-      echo "Creating Check-in DB user if missing..."
-      mongosh --host mongo-checkin -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<'JS'
-      const { DB_NAME, DB_USER, DB_PASS } = process.env;
-      const d = db.getSiblingDB(DB_NAME);
-      if (!d.getUser(DB_USER)) {
-        d.createUser({ user: DB_USER, pwd: DB_PASS, roles: [{ role: "readWrite", db: DB_NAME }]});
-        print(`Created user ${DB_USER} in ${DB_NAME}`);
-      } else {
-        print(`User ${DB_USER} already exists in ${DB_NAME}`);
-      }
-      JS
 
   checkin:
     image: lewda853/fafcab-checkin-service:latest
@@ -253,8 +158,7 @@ services:
     depends_on:
       mongo-checkin:
         condition: service_healthy
-      mongo-init-checkin:
-        condition: service_started
+
   sharing_postgres:
     image: postgres:16
     container_name: sharing-service-db
@@ -263,13 +167,13 @@ services:
       POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
       POSTGRES_DB: ${SHARING_POSTGRES_DB}
     ports:
-      - "${SHARING_POSTGRES_PORT:-5433}:5432"
+      - "${SHARING_POSTGRES_PORT:-5434}:5432"
     volumes:
       - sharing_postgres_data:/var/lib/postgresql/data
       - ./seed/sharing-service:/docker-entrypoint-initdb.d
 
   sharing-service:
-    image: felycianovac/sharing-service:1.0.0
+    image: felycianovac/sharing-service:latest
     environment:
       DB_CONNECTION: ${SHARING_DB_CONNECTION}
       JWT_SECRET: ${SHARING_JWT_SECRET}
@@ -283,7 +187,7 @@ services:
 
   fund-raising-service:
     container_name: fund-raising-service
-    image: felycianovac/fund-raising-service:1.0.0
+    image: felycianovac/fund-raising-service:latest
     environment:
       DB_CONNECTION: ${FR_DB_CONNECTION}
       JWT_SECRET: ${FR_JWT_SECRET}
@@ -304,10 +208,41 @@ services:
       POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
       POSTGRES_DB: ${FR_POSTGRES_DB}
     ports:
-      - "${FR_POSTGRES_PORT:-5434}:5432"
+      - "${FR_POSTGRES_PORT:-5435}:5432"
     volumes:
       - fr_postgres_data:/var/lib/postgresql/data
       - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
+  
+  user-management:
+    image: mashacol/user-management-service:latest
+    container_name: user-management-service
+    depends_on:
+      ums_postgres:
+        condition: service_healthy
+    ports:
+      - "${UMS_SERVICE_PORT}:3000"
+    environment:
+      NODE_ENV: ${UMS_NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: ums_postgres
+      DB_PORT: 5432
+      DB_NAME: ${UMS_DB_NAME}
+      DB_USERNAME: ${UMS_DB_USERNAME}
+      DB_PASSWORD: ${UMS_DB_PASSWORD}
+      JWT_SECRET: ${UMS_JWT_SECRET}
+      DISCORD_BOT_TOKEN: ${UMS_DISCORD_BOT_TOKEN:-}
+      DISCORD_GUILD_ID: ${UMS_DISCORD_GUILD_ID:-}
+    restart: always
+
+  notification:
+    image: mashacol/notification-service:latest
+    container_name: notification-service
+    ports:
+      - "${NS_SERVICE_PORT}:3001"
+    environment:
+      NODE_ENV: ${UMS_NS_NODE_ENV:-production}
+      PORT: 3003
+    restart: always
 
 volumes:
   ums_postgres_data:
