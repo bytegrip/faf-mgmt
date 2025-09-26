@@ -1,0 +1,256 @@
+{
+	"info": {
+		"_postman_id": "2fd2c479-2181-4c21-948c-b8ba3b5d879b",
+		"name": "Communication Service API",
+		"description": "Test all endpoints for the Communication Service (Gin+SQLite).\nYou must manually insert valid IDs for chat/message/user, as returned by previous POSTs.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39879646"
+	},
+	"item": [
+		{
+			"name": "Create Chat",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Study Group\",\n  \"type\": \"PUBLIC\",\n  \"memberIds\": [\"user1\", \"user2\"]\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/chats",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"chats"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Chat by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/chats/{{chatId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"chats",
+						"{{chatId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Chats by User",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/chats?userId=user1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"chats"
+					],
+					"query": [
+						{
+							"key": "userId",
+							"value": "user1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Send Message",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"senderId\": \"user1\",\n  \"content\": \"This message will be filtered!\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/chats/{{chatId}}/messages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"chats",
+						"{{chatId}}",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Messages in Chat",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/chats/{{chatId}}/messages",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"chats",
+						"{{chatId}}",
+						"messages"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add Banned Word",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"word\": \"spoiler\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/censorship/words",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"censorship",
+						"words"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Banned Words",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/censorship/words",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"censorship",
+						"words"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Ban a User (temp in chat)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": \"user2\",\n  \"chatId\": \"{{chatId}}\",\n  \"type\": \"TEMPORARY\",\n  \"duration\": \"PT1H\"\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/bans",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"bans"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Bans",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/bans",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"bans"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "chatId",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

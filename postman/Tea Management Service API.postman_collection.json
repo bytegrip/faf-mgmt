@@ -1,0 +1,209 @@
+{
+	"info": {
+		"_postman_id": "8241bc87-9091-4291-89d4-81354013f1e8",
+		"name": "Tea Management Service API",
+		"description": "Test endpoints for the Tea Management Service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39879646"
+	},
+	"item": [
+		{
+			"name": "Create Consumable",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"name\": \"Tea Bags\",\n  \"unit\": \"bags\",\n  \"stock\": 200,\n  \"lowStockThreshold\": 20\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumables",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumables"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Consumables",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumables",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumables"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Consumable by ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumables/{{consumableId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumables",
+						"{{consumableId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Consumable Stock",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"stock\": 180\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumables/{{consumableId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumables",
+						"{{consumableId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Log Consumption Event",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"userId\": \"user42\",\n  \"consumableId\": \"{{consumableId}}\",\n  \"amount\": 3\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumptions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List All Consumptions",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumptions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumptions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Consumptions by User",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/consumptions/{{userId}}",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"consumptions",
+						"{{userId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "List Threshold Alerts",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/tms/alerts",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tms",
+						"alerts"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
