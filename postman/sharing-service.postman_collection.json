@@ -1,0 +1,337 @@
+{
+	"info": {
+		"_postman_id": "be40d04b-116f-4bf5-b0d6-bb191bd7a43d",
+		"name": "sharing-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30464106"
+	},
+	"item": [
+		{
+			"name": "sharing-service",
+			"item": [
+				{
+					"name": "Rentals",
+					"item": [
+						{
+							"name": "request-rental",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"dueAt\": \"2025-10-24T14:08:05.861Z\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}/rentals",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}",
+										"rentals"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "approve-rental",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"status\": \"CHECKED_OUT\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}/rentals/{{rentalId}}/return",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}",
+										"rentals",
+										"{{rentalId}}",
+										"return"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "return-rental",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"status\": \"PENDING\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}/rentals",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}",
+										"rentals"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Objects",
+					"item": [
+						{
+							"name": "create-obj",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token_admin}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"name\": \"Electric Kettle\",\r\n  \"type\": \"kettle\",\r\n  \"ownerType\": \"FAF\",\r\n  \"ownerUserId\": null,\r\n  \"condition\": \"NEW\",\r\n  \"notes\": \"1.7L stainless steel\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get-objects",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "get-obj-by-id",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "update-state-of-an-obj",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"condition\": \"GOOD\",\r\n  \"notes\": \"Cup needs cleaning\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "report-damage",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"description\": \"Kettle lid cracked\",\r\n  \"severity\": \"MAJOR\"               \r\n}\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8080/api/shs/objects/{{objectId}}/damage",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"api",
+										"shs",
+										"objects",
+										"{{objectId}}",
+										"damage"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "jwt_token_user",
+			"value": ""
+		},
+		{
+			"key": "objectId",
+			"value": ""
+		},
+		{
+			"key": "rentalId",
+			"value": ""
+		},
+		{
+			"key": "jwt_token_admin",
+			"value": ""
+		}
+	]
+}
