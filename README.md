@@ -3,6 +3,7 @@
 ## Table of Contents
 - [Running](#running)
 - [Seeding](#seeding)
+- [Service Location](#service-location)
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
     - [Architecture Diagram](#architecture-diagram)
@@ -71,6 +72,16 @@ To populate the Lost & Found database with initial data:
 * Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
 * The script will connect to the service and insert sample data **only if the database is empty**.
 * You can re-run the script safely; it will skip seeding if data already exists.
+
+## Service Location
+
+### Lost Found Service
+
+The Lost Found Service is available on Docker Hub: [lumijiez/lostfound-service](https://hub.docker.com/r/lumijiez/lostfound-service)
+
+For setup instructions, refer to the `.env.example` file to see how to configure the necessary environment variables.
+
+---
 
 ## Service Boundaries
 
