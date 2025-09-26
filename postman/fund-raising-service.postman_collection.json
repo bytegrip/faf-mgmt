@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "082d1e16-5415-4a43-b265-cf7c247c767c",
+		"name": "fund-raising-service",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30464106"
+	},
+	"item": [
+		{
+			"name": "Donations",
+			"item": [
+				{
+					"name": "donate-for-a-fund",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token_user}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"amount\": 10.00\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/frs/initiatives/{{initiativeId}}/donations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"frs",
+								"initiatives",
+								"{{initiativeId}}",
+								"donations"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-all-donations",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token_admin}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:8080/api/frs/initiatives/{{initiativeId}}/donations",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"frs",
+								"initiatives",
+								"{{initiativeId}}",
+								"donations"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Initiatives",
+			"item": [
+				{
+					"name": "create-fund",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token_admin}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"Electric Kettle\",\r\n    \"description\": \"1.7L stainless steel kettle for kitchen\",\r\n    \"qty\":1,\r\n    \"goal\": 200,\r\n    \"currency\": \"MDL\",\r\n    \"deadline\": \"2025-10-24T13:47:11.935Z\",\r\n    \"targetType\": \"ASSET\",\r\n    \"targetSubtype\": \"kettle\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8080/api/frs/initiatives",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"frs",
+								"initiatives"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-all-initiatives",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/frs/initiatives",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"frs",
+								"initiatives"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get-initiative-by-id",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8080/api/frs/initiatives/{{initiativeId}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8080",
+							"path": [
+								"api",
+								"frs",
+								"initiatives",
+								"{{initiativeId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "initiativeId",
+			"value": ""
+		},
+		{
+			"key": "jwt_token_user",
+			"value": ""
+		},
+		{
+			"key": "jwt_token_admin",
+			"value": ""
+		}
+	]
+}
