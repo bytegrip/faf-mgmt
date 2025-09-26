@@ -3,6 +3,7 @@
 ## Table of Contents
 - [Running](#running)
 - [Seeding](#seeding)
+- [Service Location](#service-location)
 - [Service Boundaries](#service-boundaries)
     - [Services Overview](#services-overview)
     - [Architecture Diagram](#architecture-diagram)
@@ -38,6 +39,12 @@ LFS_POSTGRES_USER=postgres
 LFS_POSTGRES_PASSWORD=password
 LFS_POSTGRES_PORT=5432
 LFS_SERVICE_PORT=7777
+
+BS_POSTGRES_DB=budgeting-service-db
+BS_POSTGRES_USER=postgres
+BS_POSTGRES_PASSWORD=password
+BS_POSTGRES_PORT=5433
+BS_SERVICE_PORT=7778
 ```
 
 2. **Start the services** using Docker Compose:
@@ -48,8 +55,10 @@ docker-compose up --build
 
 * Wait for PostgreSQL to be ready before starting the Lost & Found service
 
-3. **Access the API**:
-   Visit `http://localhost:7777/api/lfs` to start using the service.
+3. **Access the API**
+
+- Lost Found Service API: [`http://localhost:7777/api/lfs`](http://localhost:7777/api/lfs)  
+- Budgeting Service API: [`http://localhost:7778/api/bs`](http://localhost:7778/api/bs)
 
 ---
 
@@ -69,8 +78,29 @@ To populate the Lost & Found database with initial data:
 ```
 
 * Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
-* The script will connect to the service and insert sample data **only if the database is empty**.
-* You can re-run the script safely; it will skip seeding if data already exists.
+
+### 2. Budgeting Service
+
+To populate the Budgeting database with initial data:
+
+1. Open a terminal in the repo.  
+2. Run the seeding script and specify the deployed service URL:
+
+```powershell
+.\seed\budgeting-service\seed.bat http://localhost:7778
+```
+
+* Replace `http://localhost:7778` with the actual URL if your service is running elsewhere.
+
+## Service Location
+
+### Lost Found Service
+
+The Lost Found Service is available on Docker Hub: [lumijiez/lostfound-service](https://hub.docker.com/r/lumijiez/lostfound-service)
+
+For setup instructions, refer to the `.env.example` file to see how to configure the necessary environment variables.
+
+---
 
 ## Service Boundaries
 
