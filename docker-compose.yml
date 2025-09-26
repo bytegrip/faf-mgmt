@@ -138,82 +138,123 @@ services:
       dotnet Budgeting.dll
       "
 
-  mongo:
+   # ========== BOOKING (Mongo) ==========
+  mongo-booking:
     image: mongo:7
-    container_name: fafcab-mongo
+    container_name: bookingservice
     restart: unless-stopped
-    ports:
-      - "27017:27017"
+    # Expose only if you need external DB access from host; otherwise omit ports:
+    # ports:
+    #   - "27018:27017"
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
     volumes:
-      - mongo_data:/data/db
+      - mongo_booking_data:/data/db
     healthcheck:
       test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\" || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
 
-  mongo-init:
+  mongo-init-booking:
     image: mongo:7
     depends_on:
-      mongo:
+      mongo-booking:
         condition: service_healthy
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
-      CHECKIN_DB_NAME: ${CHECKIN_DB_NAME}
-      CHECKIN_DB_USER: ${CHECKIN_DB_USER}
-      CHECKIN_DB_PASS: ${CHECKIN_DB_PASS}
-      BOOKING_DB_NAME: ${BOOKING_DB_NAME}
-      BOOKING_DB_USER: ${BOOKING_DB_USER}
-      BOOKING_DB_PASS: ${BOOKING_DB_PASS}
+      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
+      DB_NAME: ${BOOKING_DB_NAME}
+      DB_USER: ${BOOKING_DB_USER}
+      DB_PASS: ${BOOKING_DB_PASS}
     entrypoint: ["bash","-lc"]
     command: |
       set -e
-      echo "Waiting for Mongo to be ready..."
-      until mongosh --quiet --host mongo --eval 'db.runCommand({ ping: 1 })' >/dev/null 2>&1; do sleep 2; done
-      echo "Creating app users if missing..."
-      mongosh --host mongo -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<'JS'
-      const env = process.env;
-      function ensure(dbName, user, pass) {
-        const d = db.getSiblingDB(dbName);
-        if (!d.getUser(user)) {
-          d.createUser({ user, pwd: pass, roles: [{ role: "readWrite", db: dbName }]});
-          print(`Created user ${user} in ${dbName}`);
-        } else {
-          print(`User ${user} already exists in ${dbName}`);
-        }
+      echo "Creating Booking DB user if missing..."
+      mongosh --host mongo-booking -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<'JS'
+      const { DB_NAME, DB_USER, DB_PASS } = process.env;
+      const d = db.getSiblingDB(DB_NAME);
+      if (!d.getUser(DB_USER)) {
+        d.createUser({ user: DB_USER, pwd: DB_PASS, roles: [{ role: "readWrite", db: DB_NAME }]});
+        print(`Created user ${DB_USER} in ${DB_NAME}`);
+      } else {
+        print(`User ${DB_USER} already exists in ${DB_NAME}`);
       }
-      ensure(env.CHECKIN_DB_NAME, env.CHECKIN_DB_USER, env.CHECKIN_DB_PASS);
-      ensure(env.BOOKING_DB_NAME, env.BOOKING_DB_USER, env.BOOKING_DB_PASS);
       JS
 
   booking:
     image: lewda853/fafcab-booking-service:latest
+    container_name: booking-service
     restart: unless-stopped
     ports:
       - "${BOOKING_PORT}:3001"
     environment:
       PORT: "3001"
-      MONGO_URI: "mongodb://${BOOKING_DB_USER}:${BOOKING_DB_PASS}@mongo:27017/${BOOKING_DB_NAME}?authSource=${BOOKING_DB_NAME}"
+      MONGO_URI: "mongodb://${BOOKING_DB_USER}:${BOOKING_DB_PASS}@mongo-booking:27017/${BOOKING_DB_NAME}?authSource=${BOOKING_DB_NAME}"
     depends_on:
-      mongo:
+      mongo-booking:
         condition: service_healthy
+      mongo-init-booking:
+        condition: service_started
+
+  # ========== CHECK-IN (Mongo) ==========
+  mongo-checkin:
+    image: mongo:7
+    container_name: checkinservice
+    restart: unless-stopped
+   
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
+    volumes:
+      - mongo_checkin_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval \"db.runCommand({ ping: 1 }).ok\" || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  mongo-init-checkin:
+    image: mongo:7
+    depends_on:
+      mongo-checkin:
+        condition: service_healthy
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
+      DB_NAME: ${CHECKIN_DB_NAME}
+      DB_USER: ${CHECKIN_DB_USER}
+      DB_PASS: ${CHECKIN_DB_PASS}
+    entrypoint: ["bash","-lc"]
+    command: |
+      set -e
+      echo "Creating Check-in DB user if missing..."
+      mongosh --host mongo-checkin -u "$MONGO_INITDB_ROOT_USERNAME" -p "$MONGO_INITDB_ROOT_PASSWORD" --authenticationDatabase admin <<'JS'
+      const { DB_NAME, DB_USER, DB_PASS } = process.env;
+      const d = db.getSiblingDB(DB_NAME);
+      if (!d.getUser(DB_USER)) {
+        d.createUser({ user: DB_USER, pwd: DB_PASS, roles: [{ role: "readWrite", db: DB_NAME }]});
+        print(`Created user ${DB_USER} in ${DB_NAME}`);
+      } else {
+        print(`User ${DB_USER} already exists in ${DB_NAME}`);
+      }
+      JS
 
   checkin:
     image: lewda853/fafcab-checkin-service:latest
+    container_name: checkin-service
     restart: unless-stopped
     ports:
       - "${CHECKIN_PORT}:3002"
     environment:
       PORT: "3002"
-      MONGO_URI: "mongodb://${CHECKIN_DB_USER}:${CHECKIN_DB_PASS}@mongo:27017/${CHECKIN_DB_NAME}?authSource=${CHECKIN_DB_NAME}"
+      MONGO_URI: "mongodb://${CHECKIN_DB_USER}:${CHECKIN_DB_PASS}@mongo-checkin:27017/${CHECKIN_DB_NAME}?authSource=${CHECKIN_DB_NAME}"
     depends_on:
-      mongo:
+      mongo-checkin:
         condition: service_healthy
-
+      mongo-init-checkin:
+        condition: service_started
   sharing_postgres:
     image: postgres:16
     container_name: sharing-service-db
@@ -272,6 +313,7 @@ volumes:
   ums_postgres_data:
   lfs_postgres_data:
   bs_postgres_data:
-  mongo_data:
+  mongo_booking_data:
+  mongo_checkin_data:
   sharing_postgres_data:
   fr_postgres_data:
