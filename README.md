@@ -32,11 +32,11 @@ To run the services using Docker Compose, follow these steps:
 1. **Create a `.env` file** in the root of the project with the following variables:
 
 ```env
-POSTGRES_DB=lostfound-service-db
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=password
-POSTGRES_PORT=5432
-LOSTFOUND_PORT=7777
+LFS_POSTGRES_DB=lostfound-service-db
+LFS_POSTGRES_USER=postgres
+LFS_POSTGRES_PASSWORD=password
+LFS_POSTGRES_PORT=5432
+LFS_SERVICE_PORT=7777
 ```
 
 2. **Start the services** using Docker Compose:
