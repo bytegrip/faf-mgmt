@@ -78,8 +78,6 @@ To populate the Lost & Found database with initial data:
 ```
 
 * Replace `http://localhost:7777` with the actual URL if your service is running elsewhere.
-* The script will connect to the service and insert sample data **only if the database is empty**.
-* You can re-run the script safely; it will skip seeding if data already exists.
 
 ## Service Location
 
