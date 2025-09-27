@@ -57,13 +57,13 @@ BEGIN
 IF NOT EXISTS (SELECT 1 FROM "Donations") THEN
 
 INSERT INTO "Donations" ("Id", "InitiativeId", "UserId", "Amount", "Currency", "CreatedAt")
-SELECT gen_random_uuid(), i."Id", 'student_alex', 5.00, 2, NOW()
+SELECT gen_random_uuid(), i."Id", 'student_alex', 5.00, 'MDL', NOW()
 FROM "Initiatives" i
 WHERE i."Title" = 'New Teapot for FAF cab'
 AND NOT EXISTS (SELECT 1 FROM "Donations" WHERE "UserId" = 'student_alex' AND "Amount" = 5.00);
 
 INSERT INTO "Donations" ("Id", "InitiativeId", "UserId", "Amount", "Currency", "CreatedAt")
-SELECT gen_random_uuid(), i."Id", 'student_vlad', 10.00, 1, NOW()
+SELECT gen_random_uuid(), i."Id", 'student_vlad', 10.00, 'MDL', NOW()
 FROM "Initiatives" i
 WHERE i."Title" = 'Hackathon Snacks'
 AND NOT EXISTS (SELECT 1 FROM "Donations" WHERE "UserId" = 'student_vlad' AND "Amount" = 10.00);
