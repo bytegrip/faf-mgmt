@@ -1,4 +1,16 @@
 services:
+  tea_management:
+    image: ecaterinamunteanu/tea-management-service:latest
+    container_name: tea-management
+    ports:
+      - "${TEA_MGMT_SERVICE_PORT}:8080"
+
+  communication:
+    image: ecaterinamunteanu/communication-service:latest
+    container_name: communication
+    ports:
+      - "${COMMUNICATION_SERVICE_PORT}:8080"
+
   ums_postgres:
     image: postgres:15
     container_name: user-management-service-db
