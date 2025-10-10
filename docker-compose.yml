@@ -3,6 +3,7 @@ services:
   faf-mgmt-gateway:
     image: lumijiez/faf-mgmt-gateway:latest
     container_name: faf-mgmt-gateway
+    platform: linux/amd64
     volumes:
       - ./.env:/app/.env:ro
     ports:
@@ -11,12 +12,14 @@ services:
   tea_management:
     image: ecaterinamunteanu/tea-management-service:latest
     container_name: tea-management
+    platform: linux/amd64
     ports:
       - "${TEA_MGMT_SERVICE_PORT}:8080"
 
   communication:
     image: ecaterinamunteanu/communication-service:latest
     container_name: communication
+    platform: linux/amd64
     ports:
       - "${COMMUNICATION_SERVICE_PORT}:8080"
 
@@ -34,7 +37,7 @@ services:
       - ums_postgres_data:/var/lib/postgresql/data
       - ./seed/user-management-service:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USER} -d ${UMS_DB_NAME} || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d ${UMS_DB_NAME} || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 20
@@ -61,6 +64,7 @@ services:
   lostfound:
     image: lumijiez/lostfound-service:latest
     container_name: lostfound-service
+    platform: linux/amd64
     depends_on:
       lfs_postgres:
         condition: service_healthy
@@ -106,6 +110,7 @@ services:
   budgeting:
     image: lumijiez/budgeting-service:latest
     container_name: budgeting-service
+    platform: linux/amd64
     depends_on:
       bs_postgres:
         condition: service_healthy
@@ -146,6 +151,7 @@ services:
   booking:
     image: lewda853/fafcab-booking-service:latest
     container_name: booking-service
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "${BOOKING_PORT}:3001"
@@ -178,6 +184,7 @@ services:
   checkin:
     image: lewda853/fafcab-checkin-service:latest
     container_name: checkin-service
+    platform: linux/amd64
     restart: unless-stopped
     ports:
       - "${CHECKIN_PORT}:3002"
@@ -204,6 +211,7 @@ services:
 
   sharing-service:
     image: felycianovac/sharing-service:latest
+    platform: linux/amd64
     environment:
       DB_CONNECTION: ${SHARING_DB_CONNECTION}
       JWT_SECRET: ${SHARING_JWT_SECRET}
@@ -218,6 +226,7 @@ services:
   fund-raising-service:
     container_name: fund-raising-service
     image: felycianovac/fund-raising-service:latest
+    platform: linux/amd64
     environment:
       DB_CONNECTION: ${FR_DB_CONNECTION}
       JWT_SECRET: ${FR_JWT_SECRET}
@@ -246,33 +255,77 @@ services:
   user-management:
     image: mashacol/user-management-service:latest
     container_name: user-management-service
+    platform: linux/amd64
     depends_on:
       ums_postgres:
         condition: service_healthy
+      ums_redis:
+        condition: service_healthy
     ports:
-      - "${UMS_SERVICE_PORT}:3000"
+      - "${UMS_PORT}:${UMS_PORT}"
     environment:
       NODE_ENV: ${UMS_NODE_ENV:-production}
-      PORT: 3000
+      PORT: ${UMS_PORT}
       DB_HOST: ums_postgres
       DB_PORT: 5432
       DB_NAME: ${UMS_DB_NAME}
       DB_USERNAME: ${UMS_DB_USERNAME}
       DB_PASSWORD: ${UMS_DB_PASSWORD}
       JWT_SECRET: ${UMS_JWT_SECRET}
-      DISCORD_BOT_TOKEN: ${UMS_DISCORD_BOT_TOKEN:-}
-      DISCORD_GUILD_ID: ${UMS_DISCORD_GUILD_ID:-}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      NOTIFICATION_SERVICE_URL: http://notification-service:${NS_SERVICE_PORT}/api/notifications
+      REDIS_HOST: ums-redis
+      REDIS_PORT: ${UMS_REDIS_PORT}
+      REDIS_DB: 0
+      CACHE_TTL: 3600
+      GATEWAY_URI: "http://faf-mgmt-gateway:${GATEWAY_PORT}"
     restart: always
 
   notification:
     image: mashacol/notification-service:latest
     container_name: notification-service
+    platform: linux/amd64
+    depends_on:
+      ns_redis:
+        condition: service_healthy
     ports:
-      - "${NS_SERVICE_PORT}:3001"
+      - "${NS_SERVICE_PORT}:${NS_SERVICE_PORT}"
     environment:
-      NODE_ENV: ${UMS_NS_NODE_ENV:-production}
-      PORT: 3003
+      NODE_ENV: ${NS_NODE_ENV:-production}
+      PORT: ${NS_SERVICE_PORT}
+      REDIS_HOST: ns-redis
+      REDIS_PORT: ${NS_REDIS_PORT}
+      REDIS_DB: 0
+      CACHE_TTL: 604800
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      GATEWAY_URI: "http://faf-mgmt-gateway:${GATEWAY_PORT}"
     restart: always
+
+  ums_redis:
+    image: redis:7-alpine
+    container_name: ums-redis
+    ports:
+      - "${UMS_REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  ns_redis:
+    image: redis:7-alpine
+    container_name: ns-redis
+    ports:
+      - "${NS_REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 volumes:
   ums_postgres_data:
