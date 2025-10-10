@@ -1,0 +1,755 @@
+{
+	"info": {
+		"_postman_id": "ns-faf-cab-2024",
+		"name": "Notification Service",
+		"description": "Complete API collection for FAF-Cab Notification Service with Discord integration, DM and Channel notifications, and Server-Sent Events (SSE) support",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Notifications",
+			"item": [
+				{
+					"name": "Send Direct Message (DM)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('last_message_id', response.message_id);",
+									"    pm.collectionVariables.set('last_channel_id', response.channel_id);",
+									"    console.log('✅ DM sent successfully');",
+									"    console.log('💬 Message ID:', response.message_id);",
+									"    console.log('📧 Channel ID:', response.channel_id);",
+									"    console.log('⏰ Timestamp:', response.timestamp);",
+									"} else {",
+									"    console.log('❌ Failed to send DM');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"Hello! This is a direct message notification from the FAF-Cab platform.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Send a direct message (DM) notification to a Discord user. Requires a valid Discord user ID (snowflake). The message will appear in the user's Discord DMs.\n\n**Rate Limit:** 50 requests per minute\n**Timeout:** 30 seconds\n\n**How to get Discord User ID:**\n1. Enable Developer Mode in Discord (Settings > Advanced > Developer Mode)\n2. Right-click on a user and select \"Copy User ID\""
+					},
+					"response": []
+				},
+				{
+					"name": "Send Channel Message",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.collectionVariables.set('last_message_id', response.message_id);",
+									"    pm.collectionVariables.set('last_channel_id', response.channel_id);",
+									"    console.log('✅ Channel message sent successfully');",
+									"    console.log('📢 Channel:', response.channel_name);",
+									"    console.log('💬 Message ID:', response.message_id);",
+									"    console.log('📧 Channel ID:', response.channel_id);",
+									"    console.log('⏰ Timestamp:', response.timestamp);",
+									"} else {",
+									"    console.log('❌ Failed to send channel message');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"📢 Important announcement from the FAF-Cab platform!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Send a notification message to a Discord guild channel. The channel name must match exactly as it appears in Discord, including emojis and special characters.\n\n**Rate Limit:** 50 requests per minute\n**Timeout:** 30 seconds\n\n**Important:** \n- Channel name is case-sensitive\n- Include emojis and special characters exactly as they appear\n- Only text channels (type 0) are supported"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Supply Alert (DM)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log('✅ Supply alert sent successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"⚠️ Supply Alert: Tea supplies are running low! Please restock soon.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Example: Send a supply shortage alert from Tea Management Service to a user via DM"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Booking Reminder (Channel)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log('✅ Booking reminder sent successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"🚖 Reminder: Your cab booking is scheduled for tomorrow at 10:00 AM. Location: FAF Building.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Example: Send a booking reminder from Cab Booking Service to a channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Send Security Warning (Channel)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    console.log('✅ Security warning sent successfully');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"🚨 Security Alert: Unauthorized check-in attempt detected at FAF Building entrance.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Example: Send a security warning from Check-in Service to a channel"
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints for creating and sending notifications to Discord users and channels"
+		},
+		{
+			"name": "Use Case Examples",
+			"item": [
+				{
+					"name": "Lost & Found - Item Found",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"🎉 Good news! Your lost item 'Blue Backpack' has been found and is available for pickup at the Lost & Found office.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Notify user when their lost item has been found"
+					},
+					"response": []
+				},
+				{
+					"name": "Budgeting - Budget Exceeded",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"💰 Budget Alert: Your monthly spending has exceeded 80% of your allocated budget. Current spending: $450/$500.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Alert user when budget threshold is exceeded"
+					},
+					"response": []
+				},
+				{
+					"name": "Fund Raising - New Campaign",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"🎯 New Fund Raising Campaign: Help us raise $5000 for new lab equipment! Click the link to contribute: https://fafcab.example/campaign/123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Announce new fund raising campaign to channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Sharing - New Resource Available",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"📚 New Resource Available: 'Advanced Algorithms Study Guide' has been shared in the resource library. Check it out!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Notify channel about new shared resources"
+					},
+					"response": []
+				},
+				{
+					"name": "Tea Management - Restock Complete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"☕ Great news! The tea supplies have been restocked. Earl Grey, Green Tea, and Chamomile are now available in the kitchen.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Announce tea supply restock to channel"
+					},
+					"response": []
+				},
+				{
+					"name": "Communication - Group Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"📣 Attention FAF-221 students: Class meeting scheduled for Friday at 2 PM in Room 101. Please confirm your attendance.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Broadcast group communication message to channel"
+					},
+					"response": []
+				}
+			],
+			"description": "Real-world use case examples showing how different services would use the Notification Service"
+		},
+		{
+			"name": "Error Test Cases",
+			"item": [
+				{
+					"name": "Empty Message",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test validation: Empty message should return 400 Bad Request"
+					},
+					"response": []
+				},
+				{
+					"name": "DM Without User ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"message\": \"Test message without user_id\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test validation: DM type requires user_id (should return 400)"
+					},
+					"response": []
+				},
+				{
+					"name": "Channel Without Channel Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"message\": \"Test message without channel_name\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test validation: Channel type requires channel_name (should return 400)"
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid Notification Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"email\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"Test message with invalid type\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test validation: Invalid type (only 'dm' or 'channel' allowed, should return 400)"
+					},
+					"response": []
+				},
+				{
+					"name": "Invalid User ID Format",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"invalid_user_id_123abc\",\n  \"message\": \"Test message with invalid user ID format\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test validation: User ID must be numeric Discord snowflake (should return 400)"
+					},
+					"response": []
+				},
+				{
+					"name": "Non-existent User ID",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"000000000000000001\",\n  \"message\": \"Test message to non-existent user\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test Discord API error: Non-existent user should return 400 with Discord error message"
+					},
+					"response": []
+				},
+				{
+					"name": "Non-existent Channel Name",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"non-existent-channel-12345\",\n  \"message\": \"Test message to non-existent channel\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications"]
+						},
+						"description": "Test Discord API error: Non-existent channel should return 400 with error message"
+					},
+					"response": []
+				}
+			],
+			"description": "Test cases for error handling and validation"
+		},
+		{
+			"name": "Server-Sent Events (SSE)",
+			"item": [
+				{
+					"name": "SSE Info - How to Connect",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notifications/events",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "notifications", "events"]
+						},
+						"description": "**Server-Sent Events (SSE) Endpoint**\n\nThis endpoint provides real-time streaming of all notifications sent through the system.\n\n**Note:** Postman has limited SSE support. For testing SSE, use one of these methods:\n\n### Method 1: Browser JavaScript Console\n```javascript\nconst eventSource = new EventSource('http://localhost:3003/api/notifications/events');\n\neventSource.addEventListener('notification', (event) => {\n  const notification = JSON.parse(event.data);\n  console.log('📬 New notification:', notification);\n});\n\neventSource.onerror = (error) => {\n  console.error('❌ SSE error:', error);\n};\n\n// To close the connection:\n// eventSource.close();\n```\n\n### Method 2: cURL (Terminal)\n```bash\n# Terminal 1: Listen to SSE stream\ncurl -N http://localhost:3003/api/notifications/events\n\n# Terminal 2: Send a test notification\ncurl -X POST http://localhost:3003/api/notifications \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"type\":\"dm\",\"user_id\":\"427518893930709012\",\"message\":\"Test SSE\"}'\n```\n\n### Method 3: HTML Test Page\nCreate an HTML file with the following content:\n\n```html\n<!DOCTYPE html>\n<html>\n<head>\n    <title>Notification Service - SSE Test</title>\n</head>\n<body>\n    <h1>Notification Events (SSE)</h1>\n    <button id=\"connect\">Connect</button>\n    <button id=\"disconnect\">Disconnect</button>\n    <div id=\"events\"></div>\n    \n    <script>\n        let eventSource;\n        const eventsDiv = document.getElementById('events');\n        \n        document.getElementById('connect').onclick = () => {\n            eventSource = new EventSource('http://localhost:3003/api/notifications/events');\n            \n            eventSource.addEventListener('notification', (e) => {\n                const notification = JSON.parse(e.data);\n                const div = document.createElement('div');\n                div.innerHTML = `<strong>${notification.type}</strong>: ${notification.message}`;\n                eventsDiv.appendChild(div);\n            });\n        };\n        \n        document.getElementById('disconnect').onclick = () => {\n            if (eventSource) eventSource.close();\n        };\n    </script>\n</body>\n</html>\n```\n\n**Event Format:**\nEach event will have the following structure:\n```json\n{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"Hello!\",\n  \"channel_id\": \"1423957940125306983\",\n  \"message_id\": \"1423960195394174986\",\n  \"timestamp\": \"2025-10-04T09:09:26.483000+00:00\"\n}\n```\n\n**Features:**\n- ✅ Real-time notification broadcasting\n- ✅ No rate limiting\n- ✅ Automatic reconnection\n- ✅ No authentication required\n- ✅ All connected clients receive all notifications"
+					},
+					"response": []
+				}
+			],
+			"description": "Information and examples for testing Server-Sent Events (SSE)"
+		},
+		{
+			"name": "Testing Workflows",
+			"item": [
+				{
+					"name": "Complete Flow - DM",
+					"item": [
+						{
+							"name": "Step 1 - Send DM Notification",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set('dm_message_id', response.message_id);",
+											"    console.log('✅ Step 1/2: DM sent successfully');",
+											"    console.log('💬 Message ID:', response.message_id);",
+											"    console.log('⏭️  Next: Check Discord to verify message');",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"type\": \"dm\",\n  \"user_id\": \"427518893930709012\",\n  \"message\": \"🧪 Test notification - Please verify you received this DM!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/notifications",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "notifications"]
+								},
+								"description": "Step 1: Send a test DM notification"
+							},
+							"response": []
+						},
+						{
+							"name": "Step 2 - Verify Message Received",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"console.log('✅ Step 2/2: Complete');",
+											"console.log('🎉 DM workflow finished!');",
+											"console.log('📱 Check Discord to confirm message delivery');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/notifications/events",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "notifications", "events"]
+								},
+								"description": "Step 2: Manually verify the message was received in Discord"
+							},
+							"response": []
+						}
+					],
+					"description": "Complete workflow for testing DM notifications"
+				},
+				{
+					"name": "Complete Flow - Channel",
+					"item": [
+						{
+							"name": "Step 1 - Send Channel Notification",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201) {",
+											"    const response = pm.response.json();",
+											"    pm.collectionVariables.set('channel_message_id', response.message_id);",
+											"    console.log('✅ Step 1/2: Channel message sent successfully');",
+											"    console.log('📢 Channel:', response.channel_name);",
+											"    console.log('💬 Message ID:', response.message_id);",
+											"    console.log('⏭️  Next: Check Discord channel to verify message');",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"type\": \"channel\",\n  \"channel_name\": \"〘🚪〙faf-cab-playground\",\n  \"message\": \"🧪 Test notification - Please verify this message appears in the channel!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/notifications",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "notifications"]
+								},
+								"description": "Step 1: Send a test channel notification"
+							},
+							"response": []
+						},
+						{
+							"name": "Step 2 - Verify Message Received",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"console.log('✅ Step 2/2: Complete');",
+											"console.log('🎉 Channel workflow finished!');",
+											"console.log('📱 Check Discord channel to confirm message delivery');"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/notifications/events",
+									"host": ["{{baseUrl}}"],
+									"path": ["api", "notifications", "events"]
+								},
+								"description": "Step 2: Manually verify the message was received in Discord channel"
+							},
+							"response": []
+						}
+					],
+					"description": "Complete workflow for testing channel notifications"
+				}
+			],
+			"description": "Step-by-step workflows for comprehensive testing"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Global pre-request script",
+					"console.log('🔔 Notification Service API Request');"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Check rate limiting headers",
+					"if (pm.response.headers.has('X-RateLimit-Remaining')) {",
+					"    const remaining = pm.response.headers.get('X-RateLimit-Remaining');",
+					"    const limit = pm.response.headers.get('X-RateLimit-Limit');",
+					"    console.log(`⏱️  Rate Limit: ${remaining}/${limit} requests remaining`);",
+					"}"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3003",
+			"type": "string",
+			"description": "Base URL for Notification Service (default port: 3003)"
+		},
+		{
+			"key": "last_message_id",
+			"value": "",
+			"type": "string",
+			"description": "Last sent message ID (auto-saved)"
+		},
+		{
+			"key": "last_channel_id",
+			"value": "",
+			"type": "string",
+			"description": "Last used channel ID (auto-saved)"
+		},
+		{
+			"key": "dm_message_id",
+			"value": "",
+			"type": "string",
+			"description": "DM message ID from workflow"
+		},
+		{
+			"key": "channel_message_id",
+			"value": "",
+			"type": "string",
+			"description": "Channel message ID from workflow"
+		}
+	]
+}
