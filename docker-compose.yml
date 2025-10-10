@@ -151,7 +151,13 @@ services:
       - "${BOOKING_PORT}:3001"
     environment:
       PORT: "3001"
+      GATEWAY_URI: "http://faf-mgmt-gateway:${GATEWAY_PORT}"
       MONGO_URI: "mongodb://${BOOKING_DB_USER}:${BOOKING_DB_PASS}@mongo-booking:27017/${BOOKING_DB_NAME}?authSource=${BOOKING_DB_NAME}"
+      GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
+      GOOGLE_CALENDAR_ID: "${GOOGLE_CALENDAR_ID:-primary}"
+      TIMEZONE: "${TIMEZONE:-UTC}"
+    volumes:
+      - ./google-credentials.json:/app/google-credentials.json:ro
     depends_on:
       mongo-booking:
         condition: service_healthy
@@ -177,6 +183,7 @@ services:
       - "${CHECKIN_PORT}:3002"
     environment:
       PORT: "3002"
+      GATEWAY_URI: "http://faf-mgmt-gateway:${GATEWAY_PORT}"
       MONGO_URI: "mongodb://${CHECKIN_DB_USER}:${CHECKIN_DB_PASS}@mongo-checkin:27017/${CHECKIN_DB_NAME}?authSource=${CHECKIN_DB_NAME}"
     depends_on:
       mongo-checkin:
