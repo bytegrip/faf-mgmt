@@ -1,0 +1,811 @@
+{
+	"info": {
+		"_postman_id": "f3cfd0da-9b5d-4723-b9fd-0d18dd0eef8c",
+		"name": "User Management Service",
+		"description": "Complete API collection for FAF-Cab User Management Service with Discord integration, OTP-based registration, and JWT authentication",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "28384252"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Request OTP",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Check if the request was successful",
+									"if (pm.response.code === 200) {",
+									"    console.log('✅ OTP sent successfully');",
+									"    console.log('📧 Check Discord DM for OTP code');",
+									"} else {",
+									"    console.log('❌ Failed to send OTP');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"masha0498\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/otp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"otp"
+							]
+						},
+						"description": "Request OTP for registration or password update. The OTP will be sent to the user's Discord DM. Check console logs for confirmation."
+					},
+					"response": []
+				},
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201 || pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.token) {",
+									"        pm.collectionVariables.set('jwt_token', responseJson.token);",
+									"        console.log('✅ User registered successfully');",
+									"        console.log('🔑 JWT Token saved:', responseJson.token.substring(0, 20) + '...');",
+									"    }",
+									"    if (responseJson.user && responseJson.user.id) {",
+									"        pm.collectionVariables.set('user_id', responseJson.user.id);",
+									"        console.log('👤 User ID:', responseJson.user.id);",
+									"    }",
+									"} else {",
+									"    console.log('❌ Registration failed');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"masha0498\",\n  \"otp\": \"480093\",\n  \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"register"
+							]
+						},
+						"description": "Register a new user or update password using the OTP received via Discord DM. The JWT token will be automatically saved for subsequent requests."
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const responseJson = pm.response.json();",
+									"    if (responseJson.token) {",
+									"        pm.collectionVariables.set('jwt_token', responseJson.token);",
+									"        console.log('✅ Login successful');",
+									"        console.log('🔑 JWT Token saved:', responseJson.token.substring(0, 20) + '...');",
+									"    }",
+									"    if (responseJson.user && responseJson.user.id) {",
+									"        pm.collectionVariables.set('user_id', responseJson.user.id);",
+									"        console.log('👤 User ID:', responseJson.user.id);",
+									"        console.log('📛 Username:', responseJson.user.username);",
+									"    }",
+									"} else {",
+									"    console.log('❌ Login failed');",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"masha0498\",\n  \"password\": \"SecurePassword123!\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								"login"
+							]
+						},
+						"description": "Login with username and password. Returns JWT token valid for 7 days. Token is automatically saved for subsequent requests."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for OTP-based registration and login"
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2ODk4MTA0MTM0OTk4NDI2MzMiLCJ1c2VybmFtZSI6Im1hc2hhMDQ5OCIsInJvbGVzIjpbIkZBRi1lciIsIvCfkLFjYXQgbG92ZXIiLCJGQUYtMjJ4Iiwi8J-SgGRhcmsgbWFuIiwiTW9kcyIsIvCfjqhwaWNhc3NvIiwiU3VnYXIgTW9tbXkiLCLwn46s77iPbW92aWUgbG92ZXIiLCJzdXJ2ZXlfZW5qb3llciJdLCJpYXQiOjE3NjAxMzU5MDUsImV4cCI6MTc2MDc0MDcwNX0.2NoHFN7VzLgElAFNyu_1P-Qs0XSmCIqPFRsSQmy1qkg",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							]
+						},
+						"description": "Get all users without filters (default: page 1, limit 10). Requires authentication."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users with Pagination",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1&limit=20",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number (default: 1)"
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"description": "Items per page (default: 10)"
+								}
+							]
+						},
+						"description": "Get users with custom pagination. Adjust page and limit parameters as needed."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Username Filter",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users?username=john",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "username",
+									"value": "john",
+									"description": "Filter by username (partial match)"
+								}
+							]
+						},
+						"description": "Search users by username (partial match). Case-insensitive search."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Nickname Filter",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users?nickname=john",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "nickname",
+									"value": "john",
+									"description": "Filter by nickname (partial match)"
+								}
+							]
+						},
+						"description": "Search users by Discord nickname (partial match). Case-insensitive search."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users by Roles",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users?roles=role_id_1&roles=role_id_2",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "roles",
+									"value": "role_id_1",
+									"description": "Discord role ID"
+								},
+								{
+									"key": "roles",
+									"value": "role_id_2",
+									"description": "Discord role ID"
+								}
+							]
+						},
+						"description": "Filter users by Discord roles. User must have ALL specified roles (AND logic). Role IDs are Discord role IDs."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Users with Combined Filters",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users?page=1&limit=10&username=john&nickname=doe&roles=role_id_1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"description": "Page number"
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"description": "Items per page"
+								},
+								{
+									"key": "username",
+									"value": "john",
+									"description": "Filter by username (partial match)"
+								},
+								{
+									"key": "nickname",
+									"value": "doe",
+									"description": "Filter by nickname (partial match)"
+								},
+								{
+									"key": "roles",
+									"value": "role_id_1",
+									"description": "Filter by Discord role ID"
+								}
+							]
+						},
+						"description": "Combine multiple filters with pagination. All filters work together (AND logic)."
+					},
+					"response": []
+				},
+				{
+					"name": "Get User by Username",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const user = pm.response.json();",
+									"    console.log('👤 User Details:');",
+									"    console.log('   ID:', user.id);",
+									"    console.log('   Username:', user.username);",
+									"    console.log('   Nickname:', user.nickname);",
+									"    console.log('   Roles:', user.roles);",
+									"}"
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{jwt_token}}",
+								"description": "JWT token from login/register"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/users/:username",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"users",
+								":username"
+							],
+							"variable": [
+								{
+									"key": "username",
+									"value": "discord_username",
+									"description": "Discord username to search for"
+								}
+							]
+						},
+						"description": "Get detailed information about a specific user by their Discord username. Returns 404 if user not found."
+					},
+					"response": []
+				}
+			],
+			"description": "User management endpoints with filtering and pagination (all require authentication)"
+		},
+		{
+			"name": "Testing Workflows",
+			"item": [
+				{
+					"name": "Complete Registration Flow",
+					"item": [
+						{
+							"name": "Step 1 - Request OTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    console.log('✅ Step 1/3: OTP requested successfully');",
+											"    console.log('📧 Check Discord DM for OTP code');",
+											"    console.log('⏭️  Next: Copy OTP and run Step 2');",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"test.user\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/otp",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"otp"
+									]
+								},
+								"description": "Step 1: Request OTP for test user"
+							},
+							"response": []
+						},
+						{
+							"name": "Step 2 - Register with OTP",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 201 || pm.response.code === 200) {",
+											"    const responseJson = pm.response.json();",
+											"    pm.collectionVariables.set('jwt_token', responseJson.token);",
+											"    pm.collectionVariables.set('test_username', 'test.user');",
+											"    console.log('✅ Step 2/3: Registration successful');",
+											"    console.log('🔑 Token saved for testing');",
+											"    console.log('⏭️  Next: Run Step 3 to verify user exists');",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"test.user\",\n  \"otp\": \"123456\",\n  \"password\": \"TestPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"register"
+									]
+								},
+								"description": "Step 2: Complete registration with OTP from Discord DM"
+							},
+							"response": []
+						},
+						{
+							"name": "Step 3 - Verify User Created",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"if (pm.response.code === 200) {",
+											"    const user = pm.response.json();",
+											"    console.log('✅ Step 3/3: User verified successfully');",
+											"    console.log('👤 User created:', user.username);",
+											"    console.log('🎉 Registration workflow complete!');",
+											"}"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/{{test_username}}",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"{{test_username}}"
+									]
+								},
+								"description": "Step 3: Verify the user was created successfully"
+							},
+							"response": []
+						}
+					],
+					"description": "Complete registration workflow - run steps in sequence"
+				},
+				{
+					"name": "Error Test Cases",
+					"item": [
+						{
+							"name": "Invalid Login Credentials",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"discord_username\",\n  \"password\": \"WrongPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/login",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"login"
+									]
+								},
+								"description": "Test login with incorrect password (should return 401)"
+							},
+							"response": []
+						},
+						{
+							"name": "Access Without Token",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users"
+									]
+								},
+								"description": "Try accessing protected endpoint without JWT token (should return 401)"
+							},
+							"response": []
+						},
+						{
+							"name": "Invalid OTP",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"test.user\",\n  \"otp\": \"000000\",\n  \"password\": \"TestPassword123!\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/register",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"register"
+									]
+								},
+								"description": "Test registration with invalid OTP (should return 401)"
+							},
+							"response": []
+						},
+						{
+							"name": "User Not Found",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "Bearer {{jwt_token}}"
+									}
+								],
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/nonexistent_user_12345",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"nonexistent_user_12345"
+									]
+								},
+								"description": "Try to get non-existent user (should return 404)"
+							},
+							"response": []
+						},
+						{
+							"name": "OTP for Non-Discord User",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\n  \"username\": \"user_not_in_discord_12345\"\n}"
+								},
+								"url": {
+									"raw": "{{baseUrl}}/api/ums/users/otp",
+									"host": [
+										"{{baseUrl}}"
+									],
+									"path": [
+										"api",
+										"ums",
+										"users",
+										"otp"
+									]
+								},
+								"description": "Request OTP for user not in Discord server (should return 404)"
+							},
+							"response": []
+						}
+					],
+					"description": "Error test cases to verify proper error handling"
+				}
+			],
+			"description": "Complete testing workflows and error scenarios"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// This script runs before every request",
+					"// You can add global pre-request logic here"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// This script runs after every request",
+					"// You can add global test logic here"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string",
+			"description": {
+				"content": "Base URL for User Management Service",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "JWT authentication token (auto-saved from login/register)",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "User ID (auto-saved from responses)",
+				"type": "text/plain"
+			}
+		},
+		{
+			"key": "test_username",
+			"value": "",
+			"type": "string",
+			"description": {
+				"content": "Test username for workflows",
+				"type": "text/plain"
+			}
+		}
+	]
+}
