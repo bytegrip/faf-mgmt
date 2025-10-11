@@ -214,25 +214,25 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 ## Services EPs
 
 ### 1. User Management Service
-#### Base URL: /api/ums
+#### Base URL: /users
 #### Entities:
 - **User** - registered or potential user in the FAF Cab Management Platform.
 - **OTP** - handles OTP verification for user registration process.
 #### Query parameters:
-- **role** (optional) - Filter by role ("student", "teacher", "admin")
-- **group** (optional) - Filter by group
-- **page** (optional) - Page number for pagination
-- **limit** (optional) - Number of users per page
+- **page** (optional) - Page number for pagination (default: 1)
+- **limit** (optional) - Number of users per page (default: 10)
+- **username** (optional) - Filter by username (partial match)
+- **nickname** (optional) - Filter by nickname (partial match)
+- **roles** (optional) - Filter by roles (user must have all specified roles)
 
 #### EP List:
 | Method | Path                   | Auth   | Purpose                                    |
 | ------ | ---------------------- | ------ | ------------------------------------------ |
-| GET    | /users                 | admin  | Get the list of all users (members from FAF Community Server) |
-| GET    | /users/:id             | user   | Get a specific user                        |
+| GET    | /users                 | user   | Get the list of all users with pagination and filters |
+| GET    | /users/:username       | user   | Get a specific user by username            |
 | POST   | /users/login           | public | Login a user to the system                 |
-| POST   | /send_otp              | public | Send OTP to the user for registering       |
-| POST   | /users/register        | public | Register a user to the system              |
-| POST   | /users/logout          | user   | Logout user from the system                |
+| POST   | /users/otp             | public | Request OTP for registration or password update |
+| POST   | /users/register        | public | Register a new user or update password     |
 
 <p align="right"><i>Table 3 – User Management Service Endpoints</i></p>
 
@@ -240,47 +240,41 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 - *Response 200:*
 ```json
 {
-  "users": [
+  "data": [
     {
-      "id": "string",
-      "username": "string",
-      "nickname": "string",
-      "email": "string",
-      "group": "string",
-      "role": ["string"], // "student", "teacher", "admin"
-      "discordId": "string",
-      "isRegistered": "boolean",
-      "createdAt": "datetime",
-      "lastLoginAt": "datetime"
+      "id": "153120398123335680",
+      "nickname": "masha0498",
+      "global_name": "Masha",
+      "username": "masha0498",
+      "roles": [
+        "856619346419122177",
+        "856646165398814722"
+      ]
     }
   ],
-  "pagination": {
-    "page": "number",
-    "limit": "number",
-    "total": "number",
-    "totalPages": "number"
-  }
+  "page": 0,
+  "limit": 0,
+  "total": 0,
+  "totalPages": 0
 }
 ```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+- *Errors:* 401 Unauthorized, 429 Too many requests
 
-#### GET /users/:id
+#### GET /users/:username
 - *Response 200:*
 ```json
   {
-    "id": "string",
-    "username": "string",
-    "nickname": "string",
-    "email": "string",
-    "group": "string",
-    "role": ["string"], // "student", "teacher", "admin"
-    "discordId": "string",
-    "isActive": "boolean",
-    "createdAt": "datetime",
-    "lastLoginAt": "datetime"
-  }
+  "id": "153120398123335680",
+  "nickname": "masha0498",
+  "global_name": "Masha",
+  "username": "masha0498",
+  "roles": [
+    "856619346419122177",
+    "856646165398814722"
+  ]
+}
 ```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+- *Errors:* 401 Unauthorized, 404 Not Found, 429 Too many requests
 
 #### POST /users/login
 - *Request:*
@@ -293,13 +287,23 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 
 - *Response 200:*
 ```json
-  {
-    "token": "string", // JWT
+{
+  "token": "string",
+  "user": {
+    "id": "153120398123335680",
+    "nickname": "Marcel",
+    "global_name": "Marcelo",
+    "username": "vlasencom",
+    "roles": [
+      "856619346419122177",
+      "856646165398814722"
+    ]
   }
+}
 ```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+- *Errors:* 401 Invalid Credentials, 429 Too many requests 
 
-#### POST /send_otp
+#### POST /users/otp
 - *Request:*
 ```json
   {
@@ -311,11 +315,10 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 ```json
   {
     "success": true,
-    "message": "OTP sent successfully",
-    "otpExpiresAt": "datetime"
+    "message": "string"
   }
 ```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+- *Errors:* 404 Not Found (User not found in Discord), 429 Too Many Requests 
 
 #### POST /users/register
 - *Request:*
@@ -323,34 +326,27 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
   {
     "username": "string",
     "otp": "string",
-    "password": "string",
+    "password": "string"
   }
 ```
 
 - *Response 201:*
 ```json
-  {
-    "token": "string", // JWT
-    "user": {
-      "id": "string",
-      "username": "string",
-      "group": "string",
-      "role": "string",
-      "createdAt": "datetime"
-    },
+{
+  "token": "string",
+  "user": {
+    "id": "153120398123335680",
+    "nickname": "Marcel",
+    "global_name": "Marcelo",
+    "username": "vlasencom",
+    "roles": [
+      "856619346419122177",
+      "856646165398814722"
+    ]
   }
+}
 ```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
-
-#### POST /users/logout
-- *Response 200:*
-```json
-  {
-    "success": true,
-    "message": "Logged out successfully"
-  }
-```
-- *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
+- *Errors:* 401 Unauthorized (Invalid or expired OTP), 404 Not Found (User not found), 429 Too Many Requests 
 
 ### 2. Notification Service
 #### Base URL: /api/ntf
@@ -358,19 +354,32 @@ All the services in the FAF Cab Management Platform expose RESTful HTTP APIs. Th
 #### EP List:
 | Method | Path                   | Auth   | Purpose                                    |
 | ------ | ---------------------- | ------ | ------------------------------------------ |
-| POST   | /send_notification     | admin  | Send notification to the right persion     |
+| POST   | /notifications         | admin  | Send notification to the right persion     |
 
 <p align="right"><i>Table 4 – Notification Service Endpoints</i></p>
 
 #### POST /send_notification
+- *Request:*
+```json
+{
+  "type": "dm",
+  "user_id": "427518893930709012",
+  "channel_name": "〘🚪〙faf-cab-playground",
+  "message": "Hello! This is a notification from the service."
+}
+```
+
 - *Response 200:*
 ```json
-  {
-    "messageType": "string", // "dm" or "channel"
-    "username": "string",
-    "channelId": "string",
-    "message": "string"
-  }
+{
+  "type": "dm",
+  "user_id": "427518893930709012",
+  "channel_name": "〘🚪〙faf-cab-playground",
+  "message": "Hello! This is a notification from the service.",
+  "channel_id": "1423957940125306983",
+  "message_id": "1423960195394174986",
+  "timestamp": "2025-10-04T09:09:26.483000+00:00"
+}
 ```
 - *Errors:* 400 Bad Request, 401 Unauthorized, 403 Forbidden 
 
