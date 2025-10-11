@@ -1,0 +1,221 @@
+{
+	"info": {
+		"_postman_id": "f547260d-06bf-4a3c-8459-10319cda5627",
+		"name": "gateway-health-check",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30464106"
+	},
+	"item": [
+		{
+			"name": "fund-raising",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Electric Kettle\",\r\n  \"type\": \"kettle\",\r\n  \"ownerType\": \"FAF\",\r\n  \"ownerUserId\": null,\r\n  \"condition\": \"NEW\",\r\n  \"notes\": \"1.7L stainless steel\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/fund-raising-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"fund-raising-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "sharing",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"Electric Kettle\",\r\n  \"type\": \"kettle\",\r\n  \"ownerType\": \"FAF\",\r\n  \"ownerUserId\": null,\r\n  \"condition\": \"NEW\",\r\n  \"notes\": \"1.7L stainless steel\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/sharing-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"sharing-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "budgeting",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
+		},
+		{
+			"name": "communication",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "booking",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "check-in",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "lost-and-found",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notification",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notification Copy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/communication-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"communication-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "notification Copy 2",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8080/api/user-management-service/health",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"user-management-service",
+						"health"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
