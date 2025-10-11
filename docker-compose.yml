@@ -6,7 +6,7 @@ services:
     platform: linux/amd64
     environment:
       JWT_SECRET_KEY: ${GATEWAY_JWT_SECRET_KEY}
-      GATEWAY_REDIS_HOST: "redis://:supersecurepassword@redis:6379/0"
+      GATEWAY_REDIS_URI: "redis://:supersecurepassword@redis:6379/0"
     volumes:
       - ./.env:/app/.env:ro
     ports:
