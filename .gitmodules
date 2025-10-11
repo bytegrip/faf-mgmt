@@ -28,3 +28,6 @@
 [submodule "sharing-service"]
 	path = sharing-service
 	url = https://github.com/felycianovac/sharing-service
+[submodule "faf-mgmt-gateway"]
+	path = faf-mgmt-gateway
+	url = https://github.com/bytegrip/faf-mgmt-gateway
