@@ -6,10 +6,21 @@ services:
     platform: linux/amd64
     environment:
       JWT_SECRET_KEY: ${GATEWAY_JWT_SECRET_KEY}
+      GATEWAY_REDIS_HOST: "redis://:supersecurepassword@redis:6379/0"
     volumes:
       - ./.env:/app/.env:ro
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+
+  redis:
+    image: redis:7.4
+    container_name: redis
+    restart: always
+    command: ["redis-server", "--requirepass", "supersecurepassword"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
     
   tea_management:
     image: ecaterinamunteanu/tea-management-service:latest
@@ -43,7 +54,6 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
-  
   
   lfs_postgres:
     image: postgres:15
@@ -355,3 +365,4 @@ volumes:
   mongo_checkin_data:
   sharing_postgres_data:
   fr_postgres_data:
+  redis_data:
