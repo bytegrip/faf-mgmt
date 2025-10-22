@@ -1,27 +1,98 @@
 services:
 
-  faf-mgmt-gateway:
-    image: lumijiez/faf-mgmt-gateway:latest
-    container_name: faf-mgmt-gateway
-    platform: linux/amd64
-    environment:
-      JWT_SECRET_KEY: ${GATEWAY_JWT_SECRET_KEY}
-      GATEWAY_REDIS_URI: "redis://:supersecurepassword@redis:6379/0"
-    volumes:
-      - ./.env:/app/.env:ro
+  # =============================================================================
+  # =                            DO NOT TOUCH BELOW                             =
+  # =============================================================================
+  discovery:
+    image: lumijiez/discovery:latest
+    container_name: discovery
     ports:
-      - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+      - "2222:2222"
+    environment:
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
 
-  redis:
-    image: redis:7.4
-    container_name: redis
-    restart: always
-    command: ["redis-server", "--requirepass", "supersecurepassword"]
+  gateway:
+    image: lumijiez/gateway:latest
+    container_name: gateway
+    ports:
+      - "1111:1111"
+    environment:
+      - GATEWAY_SERVICE_DISCOVERY_URL_ALL=${GATEWAY_SERVICE_DISCOVERY_URL_ALL}
+      - GATEWAY_SERVICE_DISCOVERY_URL=${GATEWAY_SERVICE_DISCOVERY_URL}
+      - GATEWAY_REDIS_URI=${GATEWAY_REDIS_URI}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+    depends_on:
+      discovery:
+        condition: service_healthy
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    volumes:
+      - ./monitoring/loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+
+  promtail:
+    image: grafana/promtail:2.9.0
+    container_name: promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./monitoring/promtail-config.yml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  gateway-cache:
+    image: redis:7-alpine
+    container_name: gateway-cache
     ports:
       - "6379:6379"
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
     volumes:
-      - redis_data:/data
-    
+      - gateway-cache:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+    restart: unless-stopped
+  # =============================================================================
+  # =                          DO NOT TOUCH ABOVE                               =
+  # =============================================================================
+
   tea_management:
     image: ecaterinamunteanu/tea-management-service:latest
     container_name: tea-management
