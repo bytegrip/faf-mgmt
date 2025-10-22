@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS "Objects" (
                                          "Condition" TEXT NOT NULL,        
                                          "Notes" TEXT,
                                          "ActiveRentalId" UUID,            
-                                         "CreatedBy" TEXT NOT NULL,
+                                         "CreatedBy" TEXT,
                                          "CreatedAt" TIMESTAMP NOT NULL DEFAULT NOW(),
     "UpdatedAt" TIMESTAMP NOT NULL DEFAULT NOW()
     );
