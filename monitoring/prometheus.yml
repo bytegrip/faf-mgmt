@@ -1,0 +1,108 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'discovery'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['discovery:80']
+
+  - job_name: 'gateway'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['gateway:80']
+
+  - job_name: 'lostfound'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'lostfound'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'budgeting'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'budgeting'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'communication'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'communication'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'tea_management'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'tea_management'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'user-management'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'user-management'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'notification'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'notification'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'booking'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'booking'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'checkin'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'checkin'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'sharing-service'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'sharing-service'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'fund-raising-service'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'fund-raising-service'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
