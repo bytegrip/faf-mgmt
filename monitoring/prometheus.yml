@@ -16,3 +16,21 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: ['gateway:80']
+
+  - job_name: 'lostfound'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'lostfound'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'budgeting'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'budgeting'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
