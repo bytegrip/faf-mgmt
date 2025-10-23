@@ -30,7 +30,6 @@ services:
 
   gateway:
     image: lumijiez/gateway:latest
-    container_name: gateway
     ports:
       - "1111:80"
     environment:
@@ -44,7 +43,6 @@ services:
   
   discovery:
     image: lumijiez/discovery:latest
-    container_name: discovery
     ports:
       - "2222:80"
     environment:
@@ -52,7 +50,6 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
     ports:
       - "3333:9090"
     volumes:
@@ -66,7 +63,6 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    container_name: grafana
     ports:
       - "4444:3000"
     environment:
@@ -81,7 +77,6 @@ services:
 
   loki:
     image: grafana/loki:2.9.0
-    container_name: loki
     ports:
       - "5555:3100"
     command: -config.file=/etc/loki/local-config.yaml
@@ -91,7 +86,6 @@ services:
 
   promtail:
     image: grafana/promtail:2.9.0
-    container_name: promtail
     volumes:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/run/docker.sock:/var/run/docker.sock
@@ -102,7 +96,6 @@ services:
 
   gateway-cache:
     image: redis:7-alpine
-    container_name: gateway-cache
     ports:
       - "6379:6379"
     command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
@@ -159,7 +152,6 @@ services:
 
   lfs_postgres:
     image: postgres:15
-    container_name: lostfound-service-db
     restart: always
     environment:
       POSTGRES_DB: lostfound-service-db
@@ -191,7 +183,6 @@ services:
 
   bs_postgres:
     image: postgres:15
-    container_name: budgeting-service-db
     restart: always
     environment:
       POSTGRES_DB: budgeting-service-db
@@ -234,7 +225,6 @@ services:
 
   # tea_management:
   #   image: ecaterinamunteanu/tea-management-service:latest
-  #   container_name: tea-management
   #   platform: linux/amd64
   #   environment:
   #     GATEWAY_URL: "http://gateway:80"
@@ -246,7 +236,6 @@ services:
 
   # communication:
   #   image: ecaterinamunteanu/communication-service:latest
-  #   container_name: communication
   #   platform: linux/amd64
   #   environment:
   #     GATEWAY_URL: "http://gateway:80"
@@ -271,7 +260,6 @@ services:
 
   # ums_postgres:
   #     image: postgres:15
-  #     container_name: user-management-service-db
   #     restart: always
   #     environment:
   #       POSTGRES_DB: users
@@ -288,7 +276,6 @@ services:
 
   # user-management:
   #   image: mashacol/user-management-service:latest
-  #   container_name: user-management-service
   #   platform: linux/amd64
   #   environment:
   #     NODE_ENV: ${UMS_NODE_ENV:-production}
@@ -320,7 +307,6 @@ services:
 
   # notification:
   #   image: mashacol/notification-service:latest
-  #   container_name: notification-service
   #   platform: linux/amd64  
   #   environment:
   #     NODE_ENV: ${NS_NODE_ENV:-production}
@@ -343,7 +329,6 @@ services:
 
   # ums_redis:
   #   image: redis:7-alpine
-  #   container_name: ums-redis
   #   healthcheck:
   #     test: ["CMD", "redis-cli", "ping"]
   #     interval: 10s
@@ -352,7 +337,6 @@ services:
 
   # ns_redis:
   #   image: redis:7-alpine
-  #   container_name: ns-redis
   #   healthcheck:
   #     test: ["CMD", "redis-cli", "ping"]
   #     interval: 10s
@@ -373,7 +357,6 @@ services:
 
   # mongo-booking:
   #   image: mongo:7
-  #   container_name: bookingservice_db
   #   restart: unless-stopped
   #   environment:
   #     MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USER}
@@ -389,7 +372,6 @@ services:
 
   # booking:
   #   image: lewda853/fafcab-booking-service:latest
-  #   container_name: booking-service
   #   platform: linux/amd64
   #   restart: unless-stopped
   #   environment:
@@ -414,7 +396,6 @@ services:
   
   # mongo-checkin:
   #   image: mongo:7
-  #   container_name: checkinservice_db
   #   restart: unless-stopped
   #   environment:
   #     MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USER}
@@ -430,7 +411,6 @@ services:
 
   # checkin:
   #   image: lewda853/fafcab-checkin-service:latest
-  #   container_name: checkin-service
   #   platform: linux/amd64
   #   restart: unless-stopped
   #   environment:
@@ -464,7 +444,6 @@ services:
 
   # sharing_postgres:
   #   image: postgres:16
-  #   container_name: sharing-service-db
   #   environment:
   #     POSTGRES_USER: ${SHARING_POSTGRES_USER}
   #     POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
@@ -480,7 +459,6 @@ services:
 
   # fr_postgres:
   #     image: postgres:16
-  #     container_name: fund-raising-service-db
   #     environment:
   #       POSTGRES_USER: ${FR_POSTGRES_USER}
   #       POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
@@ -496,7 +474,6 @@ services:
 
   # sharing-service:
   #   image: felycianovac/sharing-service:latest
-  #   container_name: sharing-service
   #   environment:
   #     DB_CONNECTION: "Host=sharing_postgres;Port=5432;Database=sharing-service;Username=${SHARING_POSTGRES_USER};Password=${SHARING_POSTGRES_PASSWORD}"
   #     NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
@@ -511,7 +488,6 @@ services:
   #         condition: service_healthy
 
   # fund-raising-service:
-  #   container_name: fund-raising-service
   #   image: felycianovac/fund-raising-service:latest
   #   environment:
   #     DB_CONNECTION: "Host=fr_postgres;Port=5432;Database=fund-raising-service;Username=${FR_POSTGRES_USER};Password=${FR_POSTGRES_PASSWORD}"

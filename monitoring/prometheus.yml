@@ -34,3 +34,75 @@ scrape_configs:
         type: 'A'
         port: 80
         refresh_interval: 15s
+
+  - job_name: 'communication'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'communication'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'tea_management'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'tea_management'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'user-management'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'user-management'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'notification'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'notification'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'booking'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'booking'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'checkin'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'checkin'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'sharing-service'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'sharing-service'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
+
+  - job_name: 'fund-raising-service'
+    metrics_path: '/metrics'
+    dns_sd_configs:
+      - names:
+          - 'fund-raising-service'
+        type: 'A'
+        port: 80
+        refresh_interval: 15s
