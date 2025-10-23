@@ -179,7 +179,7 @@ services:
       lfs_postgres:
         condition: service_healthy
     deploy:
-      replicas: 3
+      replicas: 5
 
   bs_postgres:
     image: postgres:15
@@ -209,6 +209,8 @@ services:
       bs_postgres:
         condition: service_healthy
     restart: always
+    deploy:
+      replicas: 5
 
 
 
@@ -239,6 +241,8 @@ services:
       gateway:
         condition: service_healthy
     restart: always
+    deploy:
+      replicas: 5
 
   tea_postgres:
     image: postgres:16
@@ -397,76 +401,78 @@ services:
                                                                     
 
 
-  # mongo-booking:
-  #   image: mongo:7
-  #   restart: unless-stopped
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USER}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
-  #     MONGO_INITDB_DATABASE: bookingservice
-  #   volumes:
-  #     - mongo_booking_data:/data/db
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 20
+  mongo-booking:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: bookingservice
+    volumes:
+      - mongo_booking_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
-  # booking:
-  #   image: lewda853/fafcab-booking-service:latest
-  #   platform: linux/amd64
-  #   restart: unless-stopped
-  #   environment:
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #     BOOKING_PORT: 80
-  #     BOOKING_MONGO_URI: "mongodb://${BOOKING_MONGO_APP_USER}:${BOOKING_MONGO_APP_PASSWORD}@mongo-booking:27017/${BOOKING_MONGO_APP_DB}?authSource=admin"
-  #     BOOKING_MONGO_DB_NAME: "${BOOKING_MONGO_APP_DB}"
-  #     BOOKING_SERVICE_NAME: "booking-service"
-  #     BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
-  #     BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
-  #     BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
-  #     GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
-  #     TIMEZONE: "${BOOKING_TIMEZONE}"
-  #   volumes:
-  #     - ./google-credentials.json:/app/google-credentials.json:ro
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     mongo-booking:
-  #       condition: service_healthy
+  booking:
+    image: lewda853/fafcab-booking-service:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+      BOOKING_MONGO_URI: "mongodb://${BOOKING_MONGO_APP_USER}:${BOOKING_MONGO_APP_PASSWORD}@mongo-booking:27017/${BOOKING_MONGO_APP_DB}?authSource=admin"
+      BOOKING_MONGO_DB_NAME: "${BOOKING_MONGO_APP_DB}"
+      BOOKING_SERVICE_NAME: "bookingService"
+      BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
+      BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
+      BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
+      GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
+      TIMEZONE: "${BOOKING_TIMEZONE}"
+    volumes:
+      - ./google-credentials.json:/app/google-credentials.json:ro
+    depends_on:
+      gateway:
+        condition: service_healthy
+      mongo-booking:
+        condition: service_healthy
+    deploy:
+      replicas: 5
   
-  # mongo-checkin:
-  #   image: mongo:7
-  #   restart: unless-stopped
-  #   environment:
-  #     MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USER}
-  #     MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
-  #     MONGO_INITDB_DATABASE: ${CHECKIN_MONGO_APP_DB}
-  #   volumes:
-  #     - mongo_checkin_data:/data/db
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
-  #     interval: 5s
-  #     timeout: 3s
-  #     retries: 20
+  mongo-checkin:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
+      MONGO_INITDB_DATABASE: ${CHECKIN_MONGO_APP_DB}
+    volumes:
+      - mongo_checkin_data:/data/db
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
-  # checkin:
-  #   image: lewda853/fafcab-checkin-service:latest
-  #   platform: linux/amd64
-  #   restart: unless-stopped
-  #   environment:
-  #     CHECKIN_PORT: 80
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #     CHECKIN_SERVICE_NAME: "checkin-service"
-  #     CHECKIN_MONGO_URI: "mongodb://${CHECKIN_MONGO_APP_USER}:${CHECKIN_MONGO_APP_PASSWORD}@mongo-checkin:27017/${CHECKIN_MONGO_APP_DB}?authSource=admin"
-  #     CHECKIN_MONGO_DB_NAME: "${CHECKIN_MONGO_APP_DB}"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     mongo-checkin:
-  #       condition: service_healthy
+  checkin:
+    image: lewda853/fafcab-checkin-service:latest
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+      CHECKIN_SERVICE_NAME: "checkInService"
+      CHECKIN_MONGO_URI: "mongodb://${CHECKIN_MONGO_APP_USER}:${CHECKIN_MONGO_APP_PASSWORD}@mongo-checkin:27017/${CHECKIN_MONGO_APP_DB}?authSource=admin"
+      CHECKIN_MONGO_DB_NAME: "${CHECKIN_MONGO_APP_DB}"
+    depends_on:
+      gateway:
+        condition: service_healthy
+      mongo-checkin:
+        condition: service_healthy
+    deploy:
+      replicas: 5
 
 
 
@@ -562,4 +568,6 @@ volumes:
   mongo_checkin_data:
   sharing_postgres_data:
   fr_postgres_data:
+  tea-data:
+  communication-data:
   
