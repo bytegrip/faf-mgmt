@@ -223,27 +223,69 @@ services:
                                                                           
                                                                           
 
-  # tea_management:
-  #   image: ecaterinamunteanu/tea-management-service:latest
-  #   platform: linux/amd64
-  #   environment:
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #   restart: always
+  tea_management:
+    image: ecaterinamunteanu/tea-management-service:latest
+    platform: linux/amd64
+    environment:
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+      DB_HOST: tea_postgres
+      DB_USER: ${TEA_POSTGRES_USER}
+      DB_PASSWORD: ${TEA_POSTGRES_PASSWORD}
+      DB_NAME: tea-management-db
+    depends_on:
+      tea_postgres:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+    restart: always
 
-  # communication:
-  #   image: ecaterinamunteanu/communication-service:latest
-  #   platform: linux/amd64
-  #   environment:
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #   restart: always
+  tea_postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${TEA_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${TEA_POSTGRES_PASSWORD}
+      POSTGRES_DB: tea-management-db
+    volumes:
+      - tea-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${TEA_POSTGRES_USER} -d tea-management-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  communication:
+    image: ecaterinamunteanu/communication-service:latest
+    platform: linux/amd64
+    environment:
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+      DB_HOST: communication_postgres
+      DB_USER: ${COMMUNICATION_POSTGRES_USER}
+      DB_PASSWORD: ${COMMUNICATION_POSTGRES_PASSWORD}
+      DB_NAME: communication-db
+    depends_on:
+      communication_postgres:
+          condition: service_healthy
+      gateway:
+        condition: service_healthy
+    restart: always
+
+  communication_postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${COMMUNICATION_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${COMMUNICATION_POSTGRES_PASSWORD}
+      POSTGRES_DB: communication-db
+    volumes:
+      - communication-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${COMMUNICATION_POSTGRES_USER} -d communication-db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 
 
