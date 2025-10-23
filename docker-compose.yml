@@ -175,11 +175,10 @@ services:
 
   lostfound:
     image: lumijiez/lostfound-service:latest
-    container_name: lostfound-service
     platform: linux/amd64
     environment:
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
       ConnectionStrings__DefaultConnection: "Host=lfs_postgres;Port=5432;Database=lostfound-service-db;Username=${LFS_POSTGRES_USER};Password=${LFS_POSTGRES_PASSWORD}"
     restart: always
     depends_on:
@@ -206,11 +205,10 @@ services:
 
   budgeting:
     image: lumijiez/budgeting-service:latest
-    container_name: budgeting-service
     platform: linux/amd64
     environment:
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
       ConnectionStrings__DefaultConnection: "Host=bs_postgres;Port=5432;Database=budgeting-service-db;Username=${BS_POSTGRES_USER};Password=${BS_POSTGRES_PASSWORD}"
     depends_on:
       gateway:
@@ -232,29 +230,29 @@ services:
                                                                           
                                                                           
 
-  tea_management:
-    image: ecaterinamunteanu/tea-management-service:latest
-    container_name: tea-management
-    platform: linux/amd64
-    environment:
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-    depends_on:
-      gateway:
-        condition: service_healthy
-    restart: always
+  # tea_management:
+  #   image: ecaterinamunteanu/tea-management-service:latest
+  #   container_name: tea-management
+  #   platform: linux/amd64
+  #   environment:
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #   restart: always
 
-  communication:
-    image: ecaterinamunteanu/communication-service:latest
-    container_name: communication
-    platform: linux/amd64
-    environment:
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-    depends_on:
-      gateway:
-        condition: service_healthy
-    restart: always
+  # communication:
+  #   image: ecaterinamunteanu/communication-service:latest
+  #   container_name: communication
+  #   platform: linux/amd64
+  #   environment:
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #   restart: always
 
 
 
@@ -269,95 +267,95 @@ services:
 
 
 
-  ums_postgres:
-      image: postgres:15
-      container_name: user-management-service-db
-      restart: always
-      environment:
-        POSTGRES_DB: users
-        POSTGRES_USER: ${UMS_DB_USERNAME}
-        POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
-      volumes:
-        - ums_postgres_data:/var/lib/postgresql/data
-        - ./seed/user-management-service:/docker-entrypoint-initdb.d
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d ${UMS_DB_NAME} || exit 1"]
-        interval: 5s
-        timeout: 3s
-        retries: 20
+  # ums_postgres:
+  #     image: postgres:15
+  #     container_name: user-management-service-db
+  #     restart: always
+  #     environment:
+  #       POSTGRES_DB: users
+  #       POSTGRES_USER: ${UMS_DB_USERNAME}
+  #       POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
+  #     volumes:
+  #       - ums_postgres_data:/var/lib/postgresql/data
+  #       - ./seed/user-management-service:/docker-entrypoint-initdb.d
+  #     healthcheck:
+  #       test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d ${UMS_DB_NAME} || exit 1"]
+  #       interval: 5s
+  #       timeout: 3s
+  #       retries: 20
 
-  user-management:
-    image: mashacol/user-management-service:latest
-    container_name: user-management-service
-    platform: linux/amd64
-    environment:
-      NODE_ENV: ${UMS_NODE_ENV:-production}
-      PORT: 3000
-      DB_HOST: ums_postgres
-      DB_PORT: 5432
-      DB_NAME: users
-      DB_USERNAME: ${UMS_DB_USERNAME}
-      DB_PASSWORD: ${UMS_DB_PASSWORD}
-      JWT_SECRET: ${UMS_JWT_SECRET}
-      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
-      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
-      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-      NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
-      REDIS_HOST: ums-redis
-      REDIS_PORT: 6379
-      REDIS_DB: 0
-      CACHE_TTL: 3600
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-    depends_on:
-      gateway:
-        condition: service_healthy
-      ums_postgres:
-        condition: service_healthy
-      ums_redis:
-        condition: service_healthy
-    restart: always
+  # user-management:
+  #   image: mashacol/user-management-service:latest
+  #   container_name: user-management-service
+  #   platform: linux/amd64
+  #   environment:
+  #     NODE_ENV: ${UMS_NODE_ENV:-production}
+  #     PORT: 3000
+  #     DB_HOST: ums_postgres
+  #     DB_PORT: 5432
+  #     DB_NAME: users
+  #     DB_USERNAME: ${UMS_DB_USERNAME}
+  #     DB_PASSWORD: ${UMS_DB_PASSWORD}
+  #     JWT_SECRET: ${UMS_JWT_SECRET}
+  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+  #     NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
+  #     REDIS_HOST: ums-redis
+  #     REDIS_PORT: 6379
+  #     REDIS_DB: 0
+  #     CACHE_TTL: 3600
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #     ums_postgres:
+  #       condition: service_healthy
+  #     ums_redis:
+  #       condition: service_healthy
+  #   restart: always
 
-  notification:
-    image: mashacol/notification-service:latest
-    container_name: notification-service
-    platform: linux/amd64  
-    environment:
-      NODE_ENV: ${NS_NODE_ENV:-production}
-      PORT: 3003
-      REDIS_HOST: ns-redis
-      REDIS_PORT: 6379
-      REDIS_DB: 0
-      CACHE_TTL: 604800
-      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
-      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
-      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-    depends_on:
-      gateway:
-        condition: service_healthy
-      ns_redis:
-        condition: service_healthy
-    restart: always
+  # notification:
+  #   image: mashacol/notification-service:latest
+  #   container_name: notification-service
+  #   platform: linux/amd64  
+  #   environment:
+  #     NODE_ENV: ${NS_NODE_ENV:-production}
+  #     PORT: 3003
+  #     REDIS_HOST: ns-redis
+  #     REDIS_PORT: 6379
+  #     REDIS_DB: 0
+  #     CACHE_TTL: 604800
+  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #     ns_redis:
+  #       condition: service_healthy
+  #   restart: always
 
-  ums_redis:
-    image: redis:7-alpine
-    container_name: ums-redis
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+  # ums_redis:
+  #   image: redis:7-alpine
+  #   container_name: ums-redis
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
 
-  ns_redis:
-    image: redis:7-alpine
-    container_name: ns-redis
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
+  # ns_redis:
+  #   image: redis:7-alpine
+  #   container_name: ns-redis
+  #   healthcheck:
+  #     test: ["CMD", "redis-cli", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 3
 
 
 # /$$             /$$                       /$$                      
@@ -371,80 +369,80 @@ services:
                                                                     
 
 
-  mongo-booking:
-    image: mongo:7
-    container_name: bookingservice
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: bookingservice
-    volumes:
-      - mongo_booking_data:/data/db
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+  # mongo-booking:
+  #   image: mongo:7
+  #   container_name: bookingservice_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${BOOKING_MONGO_ROOT_USER}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${BOOKING_MONGO_ROOT_PASSWORD}
+  #     MONGO_INITDB_DATABASE: bookingservice
+  #   volumes:
+  #     - mongo_booking_data:/data/db
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 20
 
-  booking:
-    image: lewda853/fafcab-booking-service:latest
-    container_name: booking-service
-    platform: linux/amd64
-    restart: unless-stopped
-    environment:
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-      BOOKING_PORT: 80
-      BOOKING_MONGO_URI: "mongodb://${BOOKING_MONGO_APP_USER}:${BOOKING_MONGO_APP_PASSWORD}@mongo-booking:27017/${BOOKING_MONGO_APP_DB}?authSource=admin"
-      BOOKING_MONGO_DB_NAME: "${BOOKING_MONGO_APP_DB}"
-      BOOKING_SERVICE_NAME: "booking-service"
-      BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
-      BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
-      BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
-      GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
-      TIMEZONE: "${BOOKING_TIMEZONE}"
-    volumes:
-      - ./google-credentials.json:/app/google-credentials.json:ro
-    depends_on:
-      gateway:
-        condition: service_healthy
-      mongo-booking:
-        condition: service_healthy
+  # booking:
+  #   image: lewda853/fafcab-booking-service:latest
+  #   container_name: booking-service
+  #   platform: linux/amd64
+  #   restart: unless-stopped
+  #   environment:
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #     BOOKING_PORT: 80
+  #     BOOKING_MONGO_URI: "mongodb://${BOOKING_MONGO_APP_USER}:${BOOKING_MONGO_APP_PASSWORD}@mongo-booking:27017/${BOOKING_MONGO_APP_DB}?authSource=admin"
+  #     BOOKING_MONGO_DB_NAME: "${BOOKING_MONGO_APP_DB}"
+  #     BOOKING_SERVICE_NAME: "booking-service"
+  #     BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
+  #     BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
+  #     BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
+  #     GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
+  #     TIMEZONE: "${BOOKING_TIMEZONE}"
+  #   volumes:
+  #     - ./google-credentials.json:/app/google-credentials.json:ro
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #     mongo-booking:
+  #       condition: service_healthy
   
-  mongo-checkin:
-    image: mongo:7
-    container_name: mongo-checkin
-    restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USER}
-      MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
-      MONGO_INITDB_DATABASE: ${CHECKIN_MONGO_APP_DB}
-    volumes:
-      - mongo_checkin_data:/data/db
-    healthcheck:
-      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+  # mongo-checkin:
+  #   image: mongo:7
+  #   container_name: checkinservice_db
+  #   restart: unless-stopped
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: ${CHECKIN_MONGO_ROOT_USER}
+  #     MONGO_INITDB_ROOT_PASSWORD: ${CHECKIN_MONGO_ROOT_PASSWORD}
+  #     MONGO_INITDB_DATABASE: ${CHECKIN_MONGO_APP_DB}
+  #   volumes:
+  #     - mongo_checkin_data:/data/db
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 }).ok' || exit 1"]
+  #     interval: 5s
+  #     timeout: 3s
+  #     retries: 20
 
-  checkin:
-    image: lewda853/fafcab-checkin-service:latest
-    container_name: checkin-service
-    platform: linux/amd64
-    restart: unless-stopped
-    environment:
-      CHECKIN_PORT: 80
-      GATEWAY_URL: "http://gateway"
-      DISCOVERY_URL: "http://discovery"
-      CHECKIN_SERVICE_NAME: "checkin-service"
-      CHECKIN_MONGO_URI: "mongodb://${CHECKIN_MONGO_APP_USER}:${CHECKIN_MONGO_APP_PASSWORD}@mongo-checkin:27017/${CHECKIN_MONGO_APP_DB}?authSource=admin"
-      CHECKIN_MONGO_DB_NAME: "${CHECKIN_MONGO_APP_DB}"
-    depends_on:
-      gateway:
-        condition: service_healthy
-      mongo-checkin:
-        condition: service_healthy
+  # checkin:
+  #   image: lewda853/fafcab-checkin-service:latest
+  #   container_name: checkin-service
+  #   platform: linux/amd64
+  #   restart: unless-stopped
+  #   environment:
+  #     CHECKIN_PORT: 80
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #     CHECKIN_SERVICE_NAME: "checkin-service"
+  #     CHECKIN_MONGO_URI: "mongodb://${CHECKIN_MONGO_APP_USER}:${CHECKIN_MONGO_APP_PASSWORD}@mongo-checkin:27017/${CHECKIN_MONGO_APP_DB}?authSource=admin"
+  #     CHECKIN_MONGO_DB_NAME: "${CHECKIN_MONGO_APP_DB}"
+  #   depends_on:
+  #     gateway:
+  #       condition: service_healthy
+  #     mongo-checkin:
+  #       condition: service_healthy
 
 
 
@@ -462,70 +460,70 @@ services:
 
 
 
-  sharing_postgres:
-    image: postgres:16
-    container_name: sharing-service-db
-    environment:
-      POSTGRES_USER: ${SHARING_POSTGRES_USER}
-      POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
-      POSTGRES_DB: sharing-service
-    volumes:
-      - sharing_postgres_data:/var/lib/postgresql/data
-      - ./seed/sharing-service:/docker-entrypoint-initdb.d
-    healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-        interval: 5s
-        timeout: 3s
-        retries: 20
+  # sharing_postgres:
+  #   image: postgres:16
+  #   container_name: sharing-service-db
+  #   environment:
+  #     POSTGRES_USER: ${SHARING_POSTGRES_USER}
+  #     POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
+  #     POSTGRES_DB: sharing-service
+  #   volumes:
+  #     - sharing_postgres_data:/var/lib/postgresql/data
+  #     - ./seed/sharing-service:/docker-entrypoint-initdb.d
+  #   healthcheck:
+  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+  #       interval: 5s
+  #       timeout: 3s
+  #       retries: 20
 
-  fr_postgres:
-      image: postgres:16
-      container_name: fund-raising-service-db
-      environment:
-        POSTGRES_USER: ${FR_POSTGRES_USER}
-        POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
-        POSTGRES_DB: fund-raising-service
-      volumes:
-        - fr_postgres_data:/var/lib/postgresql/data
-        - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
-      healthcheck:
-        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-        interval: 5s
-        timeout: 3s
-        retries: 20
+  # fr_postgres:
+  #     image: postgres:16
+  #     container_name: fund-raising-service-db
+  #     environment:
+  #       POSTGRES_USER: ${FR_POSTGRES_USER}
+  #       POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
+  #       POSTGRES_DB: fund-raising-service
+  #     volumes:
+  #       - fr_postgres_data:/var/lib/postgresql/data
+  #       - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
+  #     healthcheck:
+  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+  #       interval: 5s
+  #       timeout: 3s
+  #       retries: 20
 
-  sharing-service:
-    image: felycianovac/sharing-service:latest
-    container_name: sharing-service
-    environment:
-      DB_CONNECTION: "Host=sharing_postgres;Port=5432;Database=sharing-service;Username=${SHARING_POSTGRES_USER};Password=${SHARING_POSTGRES_PASSWORD}"
-      NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
-      GATEWAY_URL: "http://gateway:1111"
-      DISCOVERY_URL: "http://discovery:2222"
-      SERVICE_NAME: sharing-service
-      SERVICE_PORT: 80
-    depends_on:
-        gateway:
-          condition: service_healthy
-        sharing_postgres:
-          condition: service_healthy
+  # sharing-service:
+  #   image: felycianovac/sharing-service:latest
+  #   container_name: sharing-service
+  #   environment:
+  #     DB_CONNECTION: "Host=sharing_postgres;Port=5432;Database=sharing-service;Username=${SHARING_POSTGRES_USER};Password=${SHARING_POSTGRES_PASSWORD}"
+  #     NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #     SERVICE_NAME: sharing-service
+  #     SERVICE_PORT: 80
+  #   depends_on:
+  #       gateway:
+  #         condition: service_healthy
+  #       sharing_postgres:
+  #         condition: service_healthy
 
-  fund-raising-service:
-    container_name: fund-raising-service
-    image: felycianovac/fund-raising-service:latest
-    environment:
-      DB_CONNECTION: "Host=fr_postgres;Port=5432;Database=fund-raising-service;Username=${FR_POSTGRES_USER};Password=${FR_POSTGRES_PASSWORD}"
-      SHARING_SERVICE_URL: ${FR_SHARING_SERVICE_URL}
-      TEA_SERVICE_URL: ${FR_TEA_SERVICE_URL}
-      SERVICE_NAME: fund-raising-service
-      SERVICE_PORT: 80
-      GATEWAY_URL: "http://gateway:1111"
-      DISCOVERY_URL: "http://discovery:2222"
-    depends_on:
-        gateway:
-          condition: service_healthy
-        fr_postgres:
-          condition: service_healthy
+  # fund-raising-service:
+  #   container_name: fund-raising-service
+  #   image: felycianovac/fund-raising-service:latest
+  #   environment:
+  #     DB_CONNECTION: "Host=fr_postgres;Port=5432;Database=fund-raising-service;Username=${FR_POSTGRES_USER};Password=${FR_POSTGRES_PASSWORD}"
+  #     SHARING_SERVICE_URL: ${FR_SHARING_SERVICE_URL}
+  #     TEA_SERVICE_URL: ${FR_TEA_SERVICE_URL}
+  #     SERVICE_NAME: fund-raising-service
+  #     SERVICE_PORT: 80
+  #     GATEWAY_URL: "http://gateway:80"
+  #     DISCOVERY_URL: "http://discovery:80"
+  #   depends_on:
+  #       gateway:
+  #         condition: service_healthy
+  #       fr_postgres:
+  #         condition: service_healthy
   
 
 volumes:
