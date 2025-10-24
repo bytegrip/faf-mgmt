@@ -31,3 +31,6 @@
 [submodule "faf-mgmt-gateway"]
 	path = faf-mgmt-gateway
 	url = https://github.com/bytegrip/faf-mgmt-gateway
+[submodule "discovery"]
+	path = discovery
+	url = https://github.com/bytegrip/discovery
