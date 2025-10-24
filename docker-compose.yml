@@ -501,66 +501,60 @@ services:
 
 
 
-  # sharing_postgres:
-  #   image: postgres:16
-  #   environment:
-  #     POSTGRES_USER: ${SHARING_POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
-  #     POSTGRES_DB: sharing-service
-  #   volumes:
-  #     - sharing_postgres_data:/var/lib/postgresql/data
-  #     - ./seed/sharing-service:/docker-entrypoint-initdb.d
-  #   healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
-
-  # fr_postgres:
-  #     image: postgres:16
-  #     environment:
-  #       POSTGRES_USER: ${FR_POSTGRES_USER}
-  #       POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
-  #       POSTGRES_DB: fund-raising-service
-  #     volumes:
-  #       - fr_postgres_data:/var/lib/postgresql/data
-  #       - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
-  #     healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
-
-  # sharing-service:
-  #   image: felycianovac/sharing-service:latest
-  #   environment:
-  #     DB_CONNECTION: "Host=sharing_postgres;Port=5432;Database=sharing-service;Username=${SHARING_POSTGRES_USER};Password=${SHARING_POSTGRES_PASSWORD}"
-  #     NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #     SERVICE_NAME: sharing-service
-  #     SERVICE_PORT: 80
-  #   depends_on:
-  #       gateway:
-  #         condition: service_healthy
-  #       sharing_postgres:
-  #         condition: service_healthy
-
-  # fund-raising-service:
-  #   image: felycianovac/fund-raising-service:latest
-  #   environment:
-  #     DB_CONNECTION: "Host=fr_postgres;Port=5432;Database=fund-raising-service;Username=${FR_POSTGRES_USER};Password=${FR_POSTGRES_PASSWORD}"
-  #     SHARING_SERVICE_URL: ${FR_SHARING_SERVICE_URL}
-  #     TEA_SERVICE_URL: ${FR_TEA_SERVICE_URL}
-  #     SERVICE_NAME: fund-raising-service
-  #     SERVICE_PORT: 80
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #       gateway:
-  #         condition: service_healthy
-  #       fr_postgres:
-  #         condition: service_healthy
+  sharing_postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${SHARING_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
+      POSTGRES_DB: sharing-service
+    volumes:
+      - sharing_postgres_data:/var/lib/postgresql/data
+      - ./seed/sharing-service:/docker-entrypoint-initdb.d
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+        interval: 5s
+        timeout: 3s
+        retries: 20
+  fr_postgres:
+      image: postgres:16
+      environment:
+        POSTGRES_USER: ${FR_POSTGRES_USER}
+        POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
+        POSTGRES_DB: fund-raising-service
+      volumes:
+        - fr_postgres_data:/var/lib/postgresql/data
+        - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+        interval: 5s
+        timeout: 3s
+        retries: 20
+  sharing-service:
+    image: felycianovac/sharing-service:latest
+    environment:
+      DB_CONNECTION: ${SH_DB_CONNECTION}
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+        gateway:
+          condition: service_healthy
+        sharing_postgres:
+          condition: service_healthy
+    deploy:
+      replicas: 5
+  fund-raising-service:
+    image: felycianovac/fund-raising-service:latest
+    environment:
+      DB_CONNECTION: ${FR_DB_CONNECTION}
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+        gateway:
+          condition: service_healthy
+        fr_postgres:
+          condition: service_healthy
+    deploy:
+      replicas: 5
   
 
 volumes:
