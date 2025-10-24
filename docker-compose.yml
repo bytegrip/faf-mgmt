@@ -429,7 +429,7 @@ services:
       BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
       BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
       BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
-      GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
+      BOOKING_GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
       TIMEZONE: "${BOOKING_TIMEZONE}"
     volumes:
       - ./google-credentials.json:/app/google-credentials.json:ro
