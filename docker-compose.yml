@@ -293,102 +293,113 @@ services:
 
 
 
-# /$$      /$$                                       /$$                
-#| $$$    /$$$                                      |__/                
-#| $$$$  /$$$$        /$$$$$$         /$$$$$$        /$$        /$$$$$$ 
-#| $$ $$/$$ $$       |____  $$       /$$__  $$      | $$       |____  $$
-#| $$  $$$| $$        /$$$$$$$      | $$  \__/      | $$        /$$$$$$$
-#| $$\  $ | $$       /$$__  $$      | $$            | $$       /$$__  $$
-#| $$ \/  | $$      |  $$$$$$$      | $$            | $$      |  $$$$$$$
-#|__/     |__/       \_______/      |__/            |__/       \_______/
+  # /$$      /$$                                       /$$
+  #| $$$    /$$$                                      |__/
+  #| $$$$  /$$$$        /$$$$$$         /$$$$$$        /$$        /$$$$$$
+  #| $$ $$/$$ $$       |____  $$       /$$__  $$      | $$       |____  $$
+  #| $$  $$$| $$        /$$$$$$$      | $$  \__/      | $$        /$$$$$$$
+  #| $$\  $ | $$       /$$__  $$      | $$            | $$       /$$__  $$
+  #| $$ \/  | $$      |  $$$$$$$      | $$            | $$      |  $$$$$$$
+  #|__/     |__/       \_______/      |__/            |__/       \_______/
 
+  ums_postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: ${UMS_DB_USERNAME}
+      POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
+    volumes:
+      - ums_postgres_data:/var/lib/postgresql/data
+      - ./seed/user-management-service:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d users || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
+  user-management:
+    image: mashacol/user-management-service:latest
+    # build:
+    #   context: ./user-management-service
+    #   dockerfile: Dockerfile
+    platform: linux/amd64
+    environment:
+      NODE_ENV: ${UMS_NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: ums_postgres
+      DB_PORT: 5432
+      DB_NAME: users
+      DB_USERNAME: ${UMS_DB_USERNAME}
+      DB_PASSWORD: ${UMS_DB_PASSWORD}
+      JWT_SECRET: ${UMS_JWT_SECRET}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
+      REDIS_HOST: ums_redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CACHE_TTL: 3600
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+      discovery:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+      ums_postgres:
+        condition: service_healthy
+      ums_redis:
+        condition: service_healthy
+    restart: always
+    deploy:
+      replicas: 2
 
-  # ums_postgres:
-  #     image: postgres:15
-  #     restart: always
-  #     environment:
-  #       POSTGRES_DB: users
-  #       POSTGRES_USER: ${UMS_DB_USERNAME}
-  #       POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
-  #     volumes:
-  #       - ums_postgres_data:/var/lib/postgresql/data
-  #       - ./seed/user-management-service:/docker-entrypoint-initdb.d
-  #     healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d ${UMS_DB_NAME} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
+  notification:
+    image: mashacol/notification-service:latest
+    # build:
+    #   context: ./notification-service
+    #   dockerfile: Dockerfile
+    platform: linux/amd64
+    environment:
+      NODE_ENV: ${NS_NODE_ENV:-production}
+      PORT: 3003
+      REDIS_HOST: ns_redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CACHE_TTL: 604800
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+      discovery:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+      ns_redis:
+        condition: service_healthy
+    restart: always
+    deploy:
+      replicas: 2
 
-  # user-management:
-  #   image: mashacol/user-management-service:latest
-  #   platform: linux/amd64
-  #   environment:
-  #     NODE_ENV: ${UMS_NODE_ENV:-production}
-  #     PORT: 3000
-  #     DB_HOST: ums_postgres
-  #     DB_PORT: 5432
-  #     DB_NAME: users
-  #     DB_USERNAME: ${UMS_DB_USERNAME}
-  #     DB_PASSWORD: ${UMS_DB_PASSWORD}
-  #     JWT_SECRET: ${UMS_JWT_SECRET}
-  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
-  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
-  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-  #     NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
-  #     REDIS_HOST: ums-redis
-  #     REDIS_PORT: 6379
-  #     REDIS_DB: 0
-  #     CACHE_TTL: 3600
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     ums_postgres:
-  #       condition: service_healthy
-  #     ums_redis:
-  #       condition: service_healthy
-  #   restart: always
+  ums_redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-  # notification:
-  #   image: mashacol/notification-service:latest
-  #   platform: linux/amd64  
-  #   environment:
-  #     NODE_ENV: ${NS_NODE_ENV:-production}
-  #     PORT: 3003
-  #     REDIS_HOST: ns-redis
-  #     REDIS_PORT: 6379
-  #     REDIS_DB: 0
-  #     CACHE_TTL: 604800
-  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
-  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
-  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     ns_redis:
-  #       condition: service_healthy
-  #   restart: always
-
-  # ums_redis:
-  #   image: redis:7-alpine
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-
-  # ns_redis:
-  #   image: redis:7-alpine
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-
+  ns_redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 # /$$             /$$                       /$$                      
 #| $$            |__/                      | $$                      
