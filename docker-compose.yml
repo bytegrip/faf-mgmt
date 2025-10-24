@@ -293,102 +293,113 @@ services:
 
 
 
-# /$$      /$$                                       /$$                
-#| $$$    /$$$                                      |__/                
-#| $$$$  /$$$$        /$$$$$$         /$$$$$$        /$$        /$$$$$$ 
-#| $$ $$/$$ $$       |____  $$       /$$__  $$      | $$       |____  $$
-#| $$  $$$| $$        /$$$$$$$      | $$  \__/      | $$        /$$$$$$$
-#| $$\  $ | $$       /$$__  $$      | $$            | $$       /$$__  $$
-#| $$ \/  | $$      |  $$$$$$$      | $$            | $$      |  $$$$$$$
-#|__/     |__/       \_______/      |__/            |__/       \_______/
+  # /$$      /$$                                       /$$
+  #| $$$    /$$$                                      |__/
+  #| $$$$  /$$$$        /$$$$$$         /$$$$$$        /$$        /$$$$$$
+  #| $$ $$/$$ $$       |____  $$       /$$__  $$      | $$       |____  $$
+  #| $$  $$$| $$        /$$$$$$$      | $$  \__/      | $$        /$$$$$$$
+  #| $$\  $ | $$       /$$__  $$      | $$            | $$       /$$__  $$
+  #| $$ \/  | $$      |  $$$$$$$      | $$            | $$      |  $$$$$$$
+  #|__/     |__/       \_______/      |__/            |__/       \_______/
 
+  ums_postgres:
+    image: postgres:15
+    restart: always
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: ${UMS_DB_USERNAME}
+      POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
+    volumes:
+      - ums_postgres_data:/var/lib/postgresql/data
+      - ./seed/user-management-service:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d users || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
 
+  user-management:
+    image: mashacol/user-management-service:latest
+    # build:
+    #   context: ./user-management-service
+    #   dockerfile: Dockerfile
+    platform: linux/amd64
+    environment:
+      NODE_ENV: ${UMS_NODE_ENV:-production}
+      PORT: 3000
+      DB_HOST: ums_postgres
+      DB_PORT: 5432
+      DB_NAME: users
+      DB_USERNAME: ${UMS_DB_USERNAME}
+      DB_PASSWORD: ${UMS_DB_PASSWORD}
+      JWT_SECRET: ${UMS_JWT_SECRET}
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
+      REDIS_HOST: ums_redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CACHE_TTL: 3600
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+      discovery:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+      ums_postgres:
+        condition: service_healthy
+      ums_redis:
+        condition: service_healthy
+    restart: always
+    deploy:
+      replicas: 2
 
-  # ums_postgres:
-  #     image: postgres:15
-  #     restart: always
-  #     environment:
-  #       POSTGRES_DB: users
-  #       POSTGRES_USER: ${UMS_DB_USERNAME}
-  #       POSTGRES_PASSWORD: ${UMS_DB_PASSWORD}
-  #     volumes:
-  #       - ums_postgres_data:/var/lib/postgresql/data
-  #       - ./seed/user-management-service:/docker-entrypoint-initdb.d
-  #     healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${UMS_DB_USERNAME} -d ${UMS_DB_NAME} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
+  notification:
+    image: mashacol/notification-service:latest
+    # build:
+    #   context: ./notification-service
+    #   dockerfile: Dockerfile
+    platform: linux/amd64
+    environment:
+      NODE_ENV: ${NS_NODE_ENV:-production}
+      PORT: 3003
+      REDIS_HOST: ns_redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      CACHE_TTL: 604800
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
+      DISCORD_API_BASE_URL: "https://discord.com/api/v10"
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+      discovery:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+      ns_redis:
+        condition: service_healthy
+    restart: always
+    deploy:
+      replicas: 2
 
-  # user-management:
-  #   image: mashacol/user-management-service:latest
-  #   platform: linux/amd64
-  #   environment:
-  #     NODE_ENV: ${UMS_NODE_ENV:-production}
-  #     PORT: 3000
-  #     DB_HOST: ums_postgres
-  #     DB_PORT: 5432
-  #     DB_NAME: users
-  #     DB_USERNAME: ${UMS_DB_USERNAME}
-  #     DB_PASSWORD: ${UMS_DB_PASSWORD}
-  #     JWT_SECRET: ${UMS_JWT_SECRET}
-  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:-}
-  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID:-}
-  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-  #     NOTIFICATION_SERVICE_URL: http://notification-service:3003/api/notifications
-  #     REDIS_HOST: ums-redis
-  #     REDIS_PORT: 6379
-  #     REDIS_DB: 0
-  #     CACHE_TTL: 3600
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     ums_postgres:
-  #       condition: service_healthy
-  #     ums_redis:
-  #       condition: service_healthy
-  #   restart: always
+  ums_redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
-  # notification:
-  #   image: mashacol/notification-service:latest
-  #   platform: linux/amd64  
-  #   environment:
-  #     NODE_ENV: ${NS_NODE_ENV:-production}
-  #     PORT: 3003
-  #     REDIS_HOST: ns-redis
-  #     REDIS_PORT: 6379
-  #     REDIS_DB: 0
-  #     CACHE_TTL: 604800
-  #     DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
-  #     DISCORD_GUILD_ID: ${DISCORD_GUILD_ID}
-  #     DISCORD_API_BASE_URL: "https://discord.com/api/v10"
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #     gateway:
-  #       condition: service_healthy
-  #     ns_redis:
-  #       condition: service_healthy
-  #   restart: always
-
-  # ums_redis:
-  #   image: redis:7-alpine
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-
-  # ns_redis:
-  #   image: redis:7-alpine
-  #   healthcheck:
-  #     test: ["CMD", "redis-cli", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 3
-
+  ns_redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
 # /$$             /$$                       /$$                      
 #| $$            |__/                      | $$                      
@@ -429,7 +440,7 @@ services:
       BOOKING_MAX_CONCURRENT_TASKS: "${BOOKING_MAX_CONCURRENT_TASKS}"
       BOOKING_TASK_TIMEOUT: "${BOOKING_TASK_TIMEOUT}"
       BOOKING_GOOGLE_CREDENTIALS_PATH: "/app/google-credentials.json"
-      GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
+      BOOKING_GOOGLE_CALENDAR_ID: "${BOOKING_GOOGLE_CALENDAR_ID}"
       TIMEZONE: "${BOOKING_TIMEZONE}"
     volumes:
       - ./google-credentials.json:/app/google-credentials.json:ro
@@ -490,66 +501,60 @@ services:
 
 
 
-  # sharing_postgres:
-  #   image: postgres:16
-  #   environment:
-  #     POSTGRES_USER: ${SHARING_POSTGRES_USER}
-  #     POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
-  #     POSTGRES_DB: sharing-service
-  #   volumes:
-  #     - sharing_postgres_data:/var/lib/postgresql/data
-  #     - ./seed/sharing-service:/docker-entrypoint-initdb.d
-  #   healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
-
-  # fr_postgres:
-  #     image: postgres:16
-  #     environment:
-  #       POSTGRES_USER: ${FR_POSTGRES_USER}
-  #       POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
-  #       POSTGRES_DB: fund-raising-service
-  #     volumes:
-  #       - fr_postgres_data:/var/lib/postgresql/data
-  #       - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
-  #     healthcheck:
-  #       test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
-  #       interval: 5s
-  #       timeout: 3s
-  #       retries: 20
-
-  # sharing-service:
-  #   image: felycianovac/sharing-service:latest
-  #   environment:
-  #     DB_CONNECTION: "Host=sharing_postgres;Port=5432;Database=sharing-service;Username=${SHARING_POSTGRES_USER};Password=${SHARING_POSTGRES_PASSWORD}"
-  #     NOTIFICATION_SERVICE_URL: ${SHARING_NOTIFICATION_SERVICE_URL}
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #     SERVICE_NAME: sharing-service
-  #     SERVICE_PORT: 80
-  #   depends_on:
-  #       gateway:
-  #         condition: service_healthy
-  #       sharing_postgres:
-  #         condition: service_healthy
-
-  # fund-raising-service:
-  #   image: felycianovac/fund-raising-service:latest
-  #   environment:
-  #     DB_CONNECTION: "Host=fr_postgres;Port=5432;Database=fund-raising-service;Username=${FR_POSTGRES_USER};Password=${FR_POSTGRES_PASSWORD}"
-  #     SHARING_SERVICE_URL: ${FR_SHARING_SERVICE_URL}
-  #     TEA_SERVICE_URL: ${FR_TEA_SERVICE_URL}
-  #     SERVICE_NAME: fund-raising-service
-  #     SERVICE_PORT: 80
-  #     GATEWAY_URL: "http://gateway:80"
-  #     DISCOVERY_URL: "http://discovery:80"
-  #   depends_on:
-  #       gateway:
-  #         condition: service_healthy
-  #       fr_postgres:
-  #         condition: service_healthy
+  sharing_postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: ${SHARING_POSTGRES_USER}
+      POSTGRES_PASSWORD: ${SHARING_POSTGRES_PASSWORD}
+      POSTGRES_DB: sharing-service
+    volumes:
+      - sharing_postgres_data:/var/lib/postgresql/data
+      - ./seed/sharing-service:/docker-entrypoint-initdb.d
+    healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+        interval: 5s
+        timeout: 3s
+        retries: 20
+  fr_postgres:
+      image: postgres:16
+      environment:
+        POSTGRES_USER: ${FR_POSTGRES_USER}
+        POSTGRES_PASSWORD: ${FR_POSTGRES_PASSWORD}
+        POSTGRES_DB: fund-raising-service
+      volumes:
+        - fr_postgres_data:/var/lib/postgresql/data
+        - ./seed/fund-raising-service:/docker-entrypoint-initdb.d
+      healthcheck:
+        test: ["CMD-SHELL", "pg_isready -U ${SHARING_POSTGRES_USER} -d ${SHARING_POSTGRES_PASSWORD} || exit 1"]
+        interval: 5s
+        timeout: 3s
+        retries: 20
+  sharing-service:
+    image: felycianovac/sharing-service:latest
+    environment:
+      DB_CONNECTION: ${SH_DB_CONNECTION}
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+        gateway:
+          condition: service_healthy
+        sharing_postgres:
+          condition: service_healthy
+    deploy:
+      replicas: 5
+  fund-raising-service:
+    image: felycianovac/fund-raising-service:latest
+    environment:
+      DB_CONNECTION: ${FR_DB_CONNECTION}
+      GATEWAY_URL: "http://gateway:80"
+      DISCOVERY_URL: "http://discovery:80"
+    depends_on:
+        gateway:
+          condition: service_healthy
+        fr_postgres:
+          condition: service_healthy
+    deploy:
+      replicas: 5
   
 
 volumes:
