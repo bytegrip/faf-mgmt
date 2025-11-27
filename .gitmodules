@@ -34,3 +34,6 @@
 [submodule "discovery"]
 	path = discovery
 	url = https://github.com/bytegrip/discovery
+[submodule "shortbus"]
+	path = shortbus
+	url = https://github.com/bytegrip/shortbus
