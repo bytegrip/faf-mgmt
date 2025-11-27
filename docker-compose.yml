@@ -26,7 +26,12 @@ services:
 # /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$ /$$$$
 #|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/
                                                                                                                                              
-  
+  shortbus:
+    image: lumijiez/shortbus:latest
+    ports:
+      - "50051:50051"
+      - "9292:9292"
+    restart: unless-stopped
 
   gateway:
     image: lumijiez/gateway:latest
@@ -171,6 +176,7 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      BROKER_URL: "http://shortbus:50051"
       ConnectionStrings__DefaultConnection: "Host=lfs_postgres;Port=5432;Database=lostfound-service-db;Username=${LFS_POSTGRES_USER};Password=${LFS_POSTGRES_PASSWORD}"
     restart: always
     depends_on:
@@ -178,8 +184,10 @@ services:
         condition: service_healthy
       lfs_postgres:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     deploy:
-      replicas: 5
+      replicas: 3
 
   bs_postgres:
     image: postgres:15
@@ -202,15 +210,18 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      BROKER_URL: "http://shortbus:50051"
       ConnectionStrings__DefaultConnection: "Host=bs_postgres;Port=5432;Database=budgeting-service-db;Username=${BS_POSTGRES_USER};Password=${BS_POSTGRES_PASSWORD}"
     depends_on:
       gateway:
         condition: service_healthy
       bs_postgres:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     restart: always
     deploy:
-      replicas: 5
+      replicas: 3
 
 
 
@@ -231,6 +242,7 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
       DB_HOST: tea_postgres
       DB_USER: ${TEA_POSTGRES_USER}
       DB_PASSWORD: ${TEA_POSTGRES_PASSWORD}
@@ -240,9 +252,11 @@ services:
         condition: service_healthy
       gateway:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     restart: always
     deploy:
-      replicas: 5
+      replicas: 1
 
   tea_postgres:
     image: postgres:16
@@ -265,6 +279,7 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
       DB_HOST: communication_postgres
       DB_USER: ${COMMUNICATION_POSTGRES_USER}
       DB_PASSWORD: ${COMMUNICATION_POSTGRES_PASSWORD}
@@ -274,6 +289,8 @@ services:
           condition: service_healthy
       gateway:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     restart: always
 
   communication_postgres:
@@ -320,9 +337,6 @@ services:
 
   user-management:
     image: mashacol/user-management-service:latest
-    # build:
-    #   context: ./user-management-service
-    #   dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       NODE_ENV: ${UMS_NODE_ENV:-production}
@@ -343,6 +357,7 @@ services:
       CACHE_TTL: 3600
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
     depends_on:
       discovery:
         condition: service_healthy
@@ -352,15 +367,14 @@ services:
         condition: service_healthy
       ums_redis:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     restart: always
     deploy:
-      replicas: 2
+      replicas: 1
 
   notification:
     image: mashacol/notification-service:latest
-    # build:
-    #   context: ./notification-service
-    #   dockerfile: Dockerfile
     platform: linux/amd64
     environment:
       NODE_ENV: ${NS_NODE_ENV:-production}
@@ -374,6 +388,7 @@ services:
       DISCORD_API_BASE_URL: "https://discord.com/api/v10"
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
     depends_on:
       discovery:
         condition: service_healthy
@@ -381,9 +396,11 @@ services:
         condition: service_healthy
       ns_redis:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     restart: always
     deploy:
-      replicas: 2
+      replicas: 1
 
   ums_redis:
     image: redis:7-alpine
@@ -434,6 +451,7 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
       BOOKING_MONGO_URI: "mongodb://${BOOKING_MONGO_APP_USER}:${BOOKING_MONGO_APP_PASSWORD}@mongo-booking:27017/${BOOKING_MONGO_APP_DB}?authSource=admin"
       BOOKING_MONGO_DB_NAME: "${BOOKING_MONGO_APP_DB}"
       BOOKING_SERVICE_NAME: "bookingService"
@@ -449,8 +467,10 @@ services:
         condition: service_healthy
       mongo-booking:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     deploy:
-      replicas: 5
+      replicas: 1
   
   mongo-checkin:
     image: mongo:7
@@ -474,6 +494,7 @@ services:
     environment:
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      SHORTBUS_URL: "shortbus:50051"
       CHECKIN_SERVICE_NAME: "checkInService"
       CHECKIN_MONGO_URI: "mongodb://${CHECKIN_MONGO_APP_USER}:${CHECKIN_MONGO_APP_PASSWORD}@mongo-checkin:27017/${CHECKIN_MONGO_APP_DB}?authSource=admin"
       CHECKIN_MONGO_DB_NAME: "${CHECKIN_MONGO_APP_DB}"
@@ -482,8 +503,10 @@ services:
         condition: service_healthy
       mongo-checkin:
         condition: service_healthy
+      shortbus:
+        condition: service_started
     deploy:
-      replicas: 5
+      replicas: 1
 
 
 
@@ -535,26 +558,32 @@ services:
       DB_CONNECTION: ${SH_DB_CONNECTION}
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      BROKER_URL: "http://shortbus:50051"
     depends_on:
         gateway:
           condition: service_healthy
         sharing_postgres:
           condition: service_healthy
+        shortbus:
+          condition: service_started
     deploy:
-      replicas: 5
+      replicas: 1
   fund-raising-service:
     image: felycianovac/fund-raising-service:latest
     environment:
       DB_CONNECTION: ${FR_DB_CONNECTION}
       GATEWAY_URL: "http://gateway:80"
       DISCOVERY_URL: "http://discovery:80"
+      BROKER_URL: "http://shortbus:50051"
     depends_on:
         gateway:
           condition: service_healthy
         fr_postgres:
           condition: service_healthy
+        shortbus:
+          condition: service_started
     deploy:
-      replicas: 5
+      replicas: 1
   
 
 volumes:
@@ -563,16 +592,17 @@ volumes:
   grafana-data:
   loki-data:
   gateway-cache:
+    driver: local
+  shortbus-data:
     driver: local  
 
-  # Private Services
   ums_postgres_data:
   lfs_postgres_data:
   bs_postgres_data:
-  mongo_booking_data:
-  mongo_checkin_data:
-  sharing_postgres_data:
   fr_postgres_data:
+  sharing_postgres_data:
   tea-data:
   communication-data:
+  mongo_booking_data:
+  mongo_checkin_data:
   
