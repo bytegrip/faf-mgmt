@@ -1803,3 +1803,234 @@ docker compose down -v
 | **Sharing Service**     | `felycianovac/sharing-service:latest`        | `${SHARING_SERVICE_PORT}` (8081) | `sharing_postgres` | [http://localhost:8081](http://localhost:8081) |
 | **Fund Raising Service**| `felycianovac/fund-raising-service:latest`   | `${FR_SERVICE_PORT}` (8082) | `fr_postgres`  | [http://localhost:8082](http://localhost:8082) |
 | **Notification Service**| `mashacol/notification-service:latest`       | `${NS_SERVICE_PORT}` (3003) | —              | [http://localhost:3003](http://localhost:3003) |
+
+---
+
+## gRPC Message Broker (ShortBus)
+
+### Overview
+The platform utilizes **ShortBus**, a custom gRPC-based message broker that facilitates asynchronous communication between microservices. ShortBus supports both **publish/subscribe (topic-based)** and **queue-based (competing consumers)** messaging patterns, providing reliable event-driven architecture with built-in circuit breaker protection, load balancing, and service discovery capabilities.
+
+### Architecture Components
+
+#### Message Broker Service
+- **gRPC Server**: Port `50051` - Handles service registration, event publishing, and subscription management
+- **HTTP Server**: Port `9292` - Provides REST endpoints for monitoring, circuit breaker management, and service discovery
+- **Service Registry**: Maintains real-time tracking of service instances with health metrics (CPU%, memory%)
+- **Load Balancer**: Implements intelligent instance selection based on resource utilization
+
+#### Communication Patterns
+
+**1. Topic-Based Publishing (Broadcast)**
+- Events are delivered to all active subscribers
+- Supports multi-consumer scenarios
+- Used for notifications and cross-service broadcasts
+
+**2. Queue-Based Consumption (Load Distribution)**
+- Events are distributed to one consumer per event
+- Automatic load balancing across service instances
+- Circuit breaker protection prevents cascading failures
+
+### Implemented Event Types
+
+#### 1. Health & Monitoring Events
+
+##### `PingRequest`
+Heartbeat message for service health verification and inter-service connectivity testing.
+
+**Fields:**
+- `message` (string): Custom message content
+- `timestamp` (int64): Unix timestamp in milliseconds
+- `from_service` (string): Identifier of the sending service
+
+**Usage:** Services send periodic pings to maintain active registry presence and verify broker connectivity.
+
+##### `PingResponse`
+Acknowledgment message for ping requests, confirming service availability.
+
+**Fields:**
+- `message` (string): Response message content
+- `timestamp` (int64): Response generation timestamp
+- `original_message` (string): Echo of the original ping message
+- `from_service` (string): Identifier of the responding service
+
+---
+
+#### 2. Circuit Breaker Testing Events
+
+##### `CircuitBreakerTestRequest`
+Diagnostic message for validating circuit breaker functionality and failure handling mechanisms.
+
+**Fields:**
+- `correlation_id` (string): Unique identifier for request-response correlation
+- `timestamp` (int64): Request initiation timestamp
+- `from_service` (string): Originating service identifier
+- `should_fail` (bool): Flag to simulate failure scenarios
+
+**Usage:** Testing resilience patterns and circuit breaker behavior under controlled failure conditions.
+
+##### `CircuitBreakerTestResponse`
+Response message indicating circuit breaker test outcome.
+
+**Fields:**
+- `correlation_id` (string): Matching request correlation identifier
+- `success` (bool): Test execution status
+- `message` (string): Descriptive result message
+- `timestamp` (int64): Response generation timestamp
+- `from_service` (string): Responding service identifier
+
+---
+
+#### 3. Business Domain Events
+
+##### `NotificationRequest`
+Event for triggering multi-channel notifications (Discord, email, SMS) to users.
+
+**Fields:**
+- `user_id` (string): Target user identifier
+- `title` (string): Notification title/subject
+- `message` (string): Notification body content
+- `type` (string): Notification category (e.g., "info", "warning", "alert")
+- `timestamp` (int64): Event generation timestamp
+
+**Usage:** Consumed by the Notification Service to dispatch messages across configured channels.
+
+##### `BroadcastCabOccupation`
+Event broadcasted when FAF Cab is reserved, notifying all relevant services of vehicle availability status.
+
+**Fields:**
+- `date` (string): Reservation date (ISO 8601 format)
+- `start_time` (string): Booking start time (HH:mm format)
+- `end_time` (string): Booking end time (HH:mm format)
+- `booking_id` (string): Unique booking identifier
+- `user_id` (string): User who created the reservation (confidential in broadcasts)
+- `timestamp` (int64): Event creation timestamp
+
+**Usage:** Published by Booking Service, consumed by Notification Service for Discord announcements.
+
+---
+
+#### 4. HTTP Proxy Events (Experimental)
+
+##### `HttpRequest`
+Encapsulates HTTP request data for event-driven HTTP proxying.
+
+**Fields:**
+- `correlation_id` (string): Request tracking identifier
+- `method` (string): HTTP method (GET, POST, PUT, DELETE, etc.)
+- `path` (string): Request path (e.g., `/api/endpoint`)
+- `headers` (map<string, string>): HTTP headers
+- `body` (bytes): Request body payload
+- `query_string` (string): URL query parameters
+- `timestamp` (int64): Request timestamp
+
+##### `HttpResponse`
+Encapsulates HTTP response data for event-driven architectures.
+
+**Fields:**
+- `correlation_id` (string): Matching request correlation identifier
+- `status_code` (int32): HTTP status code
+- `headers` (map<string, string>): Response headers
+- `body` (bytes): Response body payload
+- `timestamp` (int64): Response generation timestamp
+- `error` (string): Error message if request failed
+
+---
+
+### Service Discovery & Load Balancing
+
+#### REST Endpoint: `/services/{serviceName}`
+The broker exposes a REST API for load-aware service discovery, enabling the Gateway to route requests to optimal service instances.
+
+**Method:** `GET`
+
+**Response Format:**
+```json
+{
+  "instance_id": "budgeting-service",
+  "ip": "budgeting-service",
+  "port": 80,
+  "cpu_percent": 12.45,
+  "memory_percent": 38.22
+}
+```
+
+**Load Balancing Algorithm:**
+- Selects instance with lowest combined load (CPU% + Memory%)
+- Filters out instances with open circuit breakers
+- Returns `404` if no healthy instances available
+
+**Use Case:** Gateway queries ShortBus for service instances instead of directly querying Discovery service, enabling intelligent routing based on real-time load metrics.
+
+---
+
+### Integration Patterns
+
+#### Service Registration
+Services connect to ShortBus via gRPC and register for specific event types:
+```
+RegisterService(service_name, instance_id, event_type) → RegisterServiceResponse
+```
+
+#### Publishing Events
+```
+PublishEvent(event_type, payload, correlation_id) → PublishResponse
+```
+
+#### Subscribing to Events
+- **Topic Mode:** `SubscribeTopic(event_type, subscriber_id)` - Receive all events
+- **Queue Mode:** `SubscribeQueue(event_type, consumer_id)` - Compete for events
+
+#### Load Reporting
+Services periodically report resource utilization:
+```
+ReportLoad(service_name, instance_id, cpu_percent, memory_percent) → ReportLoadResponse
+```
+
+---
+
+### Circuit Breaker & Fault Tolerance
+
+- **Failure Threshold:** 3 failures within 30-second window triggers circuit opening
+- **Circuit Open Duration:** 60 seconds before transitioning to half-open state
+- **Recovery Testing:** Half-open state allows single request to test service recovery
+- **Manual Override:** Circuit breakers can be manually opened via REST API for maintenance
+
+---
+
+### Monitoring & Observability
+
+#### HTTP Endpoints
+- **`GET /status`** - Broker health status, uptime, and service registry statistics
+- **`GET /circuit-breakers`** - Real-time circuit breaker states and failure metrics
+- **`GET /services/{serviceName}`** - Service discovery with load-aware instance selection
+- **`GET /`** - Web UI for visual monitoring (dashboard interface)
+
+#### Metrics Tracked
+- Service instance availability (circuit breaker state)
+- CPU and memory utilization per instance
+- Event throughput (published/consumed)
+- Failure rates and circuit breaker activations
+- Request-response correlation tracking
+
+---
+
+### Protocol Buffers Schema
+
+The platform uses Protocol Buffers (proto3) for efficient serialization:
+- **`events.proto`** - Business and operational event definitions
+- **`broker.proto`** - Broker service contracts and message structures
+
+**Language Support:**
+- Java (package: `dev.bytegrip.broker`, `events`)
+- C# (namespace: `ShortBus.Grpc`, `BudgetingService.Events`)
+
+---
+
+### Deployment Considerations
+
+- **ShortBus Container:** `shortbus:9292` (HTTP), `shortbus:50051` (gRPC)
+- **Network:** All services must be on the same Docker network for gRPC communication
+- **Dependencies:** Services should implement graceful degradation if broker is unavailable
+- **Environment Variables:** Configure `BROKER_URL` in service containers (e.g., `http://shortbus:50051`)
+
