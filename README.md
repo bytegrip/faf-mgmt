@@ -25,6 +25,10 @@
   - [Contribution Rules](#contribution-rules)
 - [Running Services with Docker Compose](#running-services-with-docker-compose)
 - [Accessing Services](#accessing-services)
+- [Technical Architecture](#technical-architecture)
+  - [Saga Pattern & Distributed Transactions](#saga-pattern--distributed-transactions)
+  - [Database Replication Architecture](#database-replication-architecture)
+  - [Cache Sharding & Strategies](#cache-sharding--strategies)
 
 [//]: # (## Running)
 
@@ -2033,4 +2037,186 @@ The platform uses Protocol Buffers (proto3) for efficient serialization:
 - **Network:** All services must be on the same Docker network for gRPC communication
 - **Dependencies:** Services should implement graceful degradation if broker is unavailable
 - **Environment Variables:** Configure `BROKER_URL` in service containers (e.g., `http://shortbus:50051`)
+
+---
+
+## Technical Architecture
+
+This section provides an overview of the key architectural patterns and infrastructure components that enable distributed operations, high availability, and performance optimization across the platform.
+
+### Saga Pattern & Distributed Transactions
+
+The platform implements the **Saga pattern** to manage distributed transactions across multiple microservices without relying on traditional two-phase commit protocols.
+
+#### Key Concepts
+
+**Saga Orchestration:**
+- Distributed transactions are coordinated as a series of local transactions
+- Each step in a saga is an isolated operation that can succeed or fail independently
+- The saga coordinator tracks the overall transaction state and progress
+
+**Compensation Logic:**
+- When a transaction fails at any step, compensating transactions are executed to undo previous operations
+- Each saga step defines its own compensation handler
+- Compensation flows execute in reverse order to maintain consistency
+
+**Transaction States:**
+- **Running:** Saga is actively executing steps
+- **Completed:** All steps executed successfully
+- **Failed:** One or more steps failed, compensation may be triggered
+- **Compensating:** Rollback operations are in progress
+
+#### Monitoring & Observability
+
+The platform provides a real-time saga dashboard (`/saga-dashboard`) that visualizes:
+- Active, completed, and failed transaction counts
+- Step-by-step execution timeline for each saga
+- Compensation events and rollback flows
+- Transaction duration and lifecycle metrics
+
+#### Benefits
+
+- **Loose Coupling:** Services remain independent and don't hold locks
+- **Fault Tolerance:** Failures are isolated and can be compensated
+- **Scalability:** No distributed locking or blocking operations
+- **Auditability:** Complete transaction history with compensation trails
+
+---
+
+### Database Replication Architecture
+
+The platform uses **PostgreSQL streaming replication** to achieve high availability, read scalability, and disaster recovery capabilities.
+
+#### Replication Topology
+
+**Primary-Replica Model:**
+- One primary database node handles all write operations
+- Multiple replica nodes asynchronously stream changes from the primary
+- Typical configuration: 1 primary + 2 replicas per service database
+
+**Write-Ahead Log (WAL) Streaming:**
+- Primary generates WAL records for all data modifications
+- Replicas continuously stream and apply WAL records
+- Asynchronous replication minimizes write latency on the primary
+
+#### Connection & Failover Strategy
+
+**Multi-Host Connection Strings:**
+```
+Host=primary,replica1,replica2;Database=mydb;Target Session Attributes=primary
+```
+
+- Applications specify all database hosts in the connection string
+- `Target Session Attributes=primary` ensures writes go to the primary node
+- Automatic failover if the primary becomes unavailable
+- Read queries can be distributed across replicas for load balancing
+
+#### Replication Configuration
+
+**Primary Settings:**
+```
+wal_level=replica
+max_wal_senders=3
+wal_keep_size=64MB
+```
+
+**Replica Settings:**
+```
+hot_standby=on
+primary_conninfo='host=primary port=5432 user=replicator'
+```
+
+#### Benefits
+
+- **High Availability:** Automatic failover to replica if primary fails
+- **Read Scalability:** Distribute read-heavy workloads across replicas
+- **Data Protection:** Multiple copies protect against hardware failures
+- **Zero Data Loss:** Synchronous replication option for critical data
+
+#### ETL Integration
+
+Each database (primary and replicas) can be queried independently for ETL processes, enabling:
+- Offload analytical queries to replicas to avoid impacting transactional workloads
+- Export data from multiple nodes for consistency verification
+- Historical snapshots from different replication lag points
+
+---
+
+### Cache Sharding & Strategies
+
+The platform implements a **distributed caching layer** using Redis to reduce database load and improve response times.
+
+#### Architecture
+
+**Multi-Node Sharding:**
+- 3 Redis nodes distribute cached data across the cluster
+- Consistent hashing ensures even data distribution
+- Cache keys are hashed to determine target node
+
+**Cache Topology:**
+```
+cache_redis_1:6379
+cache_redis_2:6379
+cache_redis_3:6379
+```
+
+#### Caching Strategy
+
+**Cache-Aside Pattern:**
+1. Check cache for requested data
+2. If cache miss, query database
+3. Store result in cache with TTL (Time To Live)
+4. Return data to client
+
+**Cache Key Structure:**
+```
+service:resource:identifier
+Examples:
+- user:profile:12345
+- booking:calendar:2025-01-15
+- budget:report:Q4-2024
+```
+
+#### Cache Exceptions
+
+Certain endpoints **bypass caching** to ensure data freshness:
+- **Health checks:** Always return live status (`/health`)
+- **Saga test endpoints:** Dynamic transaction testing (`/saga/test-saga-transactions`)
+- **ETL exports:** Large dataset exports that shouldn't pollute cache (`/etl/export`)
+
+**Exception Implementation:**
+```java
+boolean shouldSkipCache = path.contains("/health") 
+    || path.contains("/saga/test-saga-transactions")
+    || path.contains("/etl/export");
+```
+
+#### TTL & Eviction
+
+**Time-Based Expiration:**
+- Short-lived data: 5-15 minutes (e.g., session tokens)
+- Medium-lived data: 1-6 hours (e.g., user profiles)
+- Long-lived data: 12-24 hours (e.g., static configuration)
+
+**Eviction Policies:**
+- `allkeys-lru`: Evict least recently used keys when memory limit reached
+- Prioritizes frequently accessed data
+- Prevents memory exhaustion on high-traffic services
+
+#### Benefits
+
+- **Reduced Latency:** Sub-millisecond cache lookups vs. database queries
+- **Database Protection:** Absorbs read traffic spikes without overwhelming the database
+- **Horizontal Scalability:** Add more Redis nodes to handle increased load
+- **Cost Efficiency:** Lower database resource requirements and infrastructure costs
+
+#### Monitoring
+
+Cache performance metrics are exposed for observability:
+- **Hit Rate:** Percentage of requests served from cache
+- **Miss Rate:** Percentage requiring database fallback
+- **Eviction Count:** Number of keys evicted due to memory pressure
+- **Average Latency:** Response time for cache operations
+
+---
 
