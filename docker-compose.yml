@@ -27,18 +27,14 @@ services:
 #|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/|____/
 
   shortbus:
-    build:
-      context: ./shortbus
-      dockerfile: Dockerfile
+    image: lumijiez/shortbus:latest
     ports:
       - "50051:50051"
       - "9292:9292"
     restart: unless-stopped
 
   gateway:
-    build:
-      context: ./faf-mgmt-gateway
-      dockerfile: Dockerfile
+    image: lumijiez/gateway:latest
     ports:
       - "1111:80"
     environment:
